@@ -61,7 +61,7 @@ for region in regions_data:
                     for month in MONTH_AND_AVG:
                         df[month] = df[month]/num_region_datapoints
                 else:
-                    temp_df = pd.read_csv(io.StringIO(response.text)) #what the sigma sigma boy
+                    temp_df = pd.read_csv(io.StringIO(response.text))
                     for month in MONTH_AND_AVG:
                         temp_df[month] = temp_df[month]/num_region_datapoints
                         df[month] += temp_df[month]
