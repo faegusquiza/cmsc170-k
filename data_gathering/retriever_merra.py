@@ -38,9 +38,10 @@ for region in regions_data:
         "PRECTOTCORR",
         "WS10M"
     ]
+    region_df = None
     num_region_datapoints = len(region["lat"])
     for idx, params in enumerate(parameters):
-        df = None
+        param_df = None
         for i in range(num_region_datapoints): 
             query_params = {
                 "latitude": region["lat"][i],
@@ -57,20 +58,25 @@ for region in regions_data:
 
             if response.status_code == 200:
                 if i == 0:
-                    df = pd.read_csv(io.StringIO(response.text))
+                    param_df = pd.read_csv(io.StringIO(response.text))
                     for month in MONTH_AND_AVG:
-                        df[month] = df[month]/num_region_datapoints
+                        param_df[month] = param_df[month]/num_region_datapoints
                 else:
                     temp_df = pd.read_csv(io.StringIO(response.text))
                     for month in MONTH_AND_AVG:
                         temp_df[month] = temp_df[month]/num_region_datapoints
-                        df[month] += temp_df[month]
+                        param_df[month] += temp_df[month]
             else:
                 print(f"Error fetching {params} for region {region['name']} at ({region['lat'][i]}, {region['long'][i]}): {response.text}")
-            print(df)
-        time.sleep(1) # API rate limit
-        break   #Temporary break, for testing purposes and for not flooding the server or something
-    break   #Temporary break, for testing purposes
+            print(param_df)
+            time.sleep(1) # API rate limit
+
+        #For now, write a CSV File From the data...
+        output_filename = f"{region['name']} at {params}.csv"
+
+        param_df.to_csv(output_filename, index=False)
+
+    break   #Temporary break, for testing purposes and to not flood the api and allat...
 
 
 
