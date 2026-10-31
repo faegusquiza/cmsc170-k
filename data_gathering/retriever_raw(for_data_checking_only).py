@@ -79,7 +79,7 @@ def main():
 
                 if response.status_code == 200:
                     param_df = pd.read_csv(io.StringIO(response.text))
-                    output_filename = f"RAW_{region_merra['name']} at {params}.csv"
+                    output_filename = f"RAW_{region_merra['name']}_{params}_at_{region_merra['lat'][i]}_{region_merra['long'][i]}.csv"
                     param_df.to_csv(output_filename, index=False)
                 else:
                     print(f"Error fetching {params} for region {region_merra['name']} at ({region_merra['lat'][i]}, {region_merra['long'][i]}): {response.text}")
@@ -107,7 +107,7 @@ def main():
 
             if response.status_code == 200:
                 param_df = pd.read_csv(io.StringIO(response.text))
-                output_filename = f"RAW_{region_syn['name']} at ALLSKY_SFC_SW_DWN.csv"
+                output_filename = f"RAW_{region_syn['name']}_ALLSKY_SFC_SW_DWN_at_{region_syn['lat'][i]}_{region_syn['long'][i]}.csv"
                 param_df.to_csv(output_filename, index=False)
 
             else:
