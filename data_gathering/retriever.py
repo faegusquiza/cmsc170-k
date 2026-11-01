@@ -31,7 +31,7 @@ from pathlib import Path
 
 
 # Directory paths for input coordinate files and exported regional datasets
-OUTPUT_FOLDER = Path('regions_test')
+OUTPUT_FOLDER = Path('regions')
 GRID_COORDINATE_FOLDER = Path('grid_coordinates')
 
 # Monthly columns returned by the NASA POWER API
@@ -41,10 +41,7 @@ TIME_COLUMNS = [
     'AUG', 'SEP', 'OCT', 'NOV', 'DEC', 'ANN'
 ]
 
-RESULT_COLUMNS = [
-    'PARAMETER', 'YEAR', 'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL',
-    'AUG', 'SEP', 'OCT', 'NOV', 'DEC', 'ANN'
-]
+RESULT_COLUMNS = ['PARAMETER', 'YEAR'] + TIME_COLUMNS
 
 # Philippine regions included in the data extraction
 REGIONS = [
@@ -96,13 +93,6 @@ def main():
         )
         merra2_data['GRID_LAYER'] = ["MERRA2"] *((int(END_YEAR) - int(START_YEAR) + 1)*len(MERRA2_PARAMETERS))
 
-        # For looking purposes and all that
-        for i in range(25*len(MERRA2_PARAMETERS)):
-            for keys in merra2_data:
-                print(merra2_data[keys][i], "," , end="")
-            print()
-
-
         # Retrieve and calculate regional averages for the SYN1DEG grid layer
         print(f'[SYN1DEG Grid Layer] Extracting {", ".join(SYN1DEG_PARAMETERS)} for {region}')
         syn1deg_data = fetch_regional_parameter_average(
@@ -112,14 +102,17 @@ def main():
 
         # Vertically concatenate both datasets
         # The GRID_LAYER column identifies the source of each record
-        regional_data = merra2_data | syn1deg_data
+        regional_data = {}
 
+        for column in merra2_data:
+            regional_data[column] = merra2_data[column] + syn1deg_data[column]
+
+        # Prepare CSV File data
         csv_headers = [list(regional_data.keys())]
-        csv_rows = [list(row) for row in list(zip(*regional_data.values()))]
+        csv_rows = list(zip(*regional_data.values()))
         csv_content = csv_headers + csv_rows
 
         # Generate the output filename using the region name
-        # Example: REGION 4-A becomes region_4-a.csv
         output_filename = region.lower().replace(" ", "_") + '.csv'
         output_filepath = OUTPUT_FOLDER / output_filename
 

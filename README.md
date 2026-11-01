@@ -196,7 +196,7 @@ The extraction process follows these steps:
 
 **1. Load grid coordinates**
 
-The coordinate CSV files are loaded using Pandas. Grid points are grouped according to their corresponding Philippine regions.
+The coordinate CSV files are loaded using `csv`. Grid points are grouped according to their corresponding Philippine regions.
 
 **2. Retrieve climate data**
 
