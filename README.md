@@ -1,4 +1,4 @@
-# Philippine Climate Zone Clustering
+# Philippine Yearly Climate Zone Clustering
 
 **CMSC 170 Project**
 
@@ -226,16 +226,16 @@ The combined regional datasets are saved as CSV files inside the `regions/` dire
 
 The current implementation calculates the arithmetic mean of the climate values across all grid points within a region.
 
-\[
+$$
 \bar{x}_{r,t} =
 \frac{1}{n_r}\sum_{i=1}^{n_r}x_{i,t}
-\]
+$$
 
 Where:
 
-- \(\bar{x}_{r,t}\): Average climate value for region \(r\) at time \(t\).
-- \(n_r\): Number of grid points belonging to region \(r\).
-- \(x_{i,t}\): Climate value at grid point \(i\) for time \(t\).
+- $\bar{x}_{r,t}$: Average climate value for region $r$ at time $t$.
+- $n_r$: Number of grid points belonging to region $r$.
+- $x_{i,t}$: Climate value at grid point $i$ for time $t$.
 
 Each grid point receives equal weight in the calculation.
 
@@ -281,8 +281,8 @@ K-means partitions observations into a predefined number of clusters based on th
 
 The algorithm follows these steps:
 
-1. Select the desired number of clusters, \(k\).
-2. Initialize \(k\) cluster centroids.
+1. Select the desired number of clusters, $k$.
+2. Initialize $k$ cluster centroids.
 3. Assign each observation to its nearest centroid.
 4. Recalculate each centroid using the mean of the observations assigned to its cluster.
 5. Repeat the assignment and centroid-update steps until convergence or another stopping criterion is reached.
