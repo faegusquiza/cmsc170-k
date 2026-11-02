@@ -1,5 +1,7 @@
-﻿from read_data import TIME_COLUMNS, read_data, read_file
+﻿from read_data import MONTHS, TIME_COLUMNS, read_file, read_monthly_data
 
+# prints the original records first then the prepared monthly datasets
+# this is only for testing
 def print_data():
     data = read_file()
     if not data:
@@ -8,22 +10,18 @@ def print_data():
     headers = ["PARAMETER", "YEAR"] + TIME_COLUMNS + ["GRID_LAYER"]
     for region in data:
         print(f"\n{region}")
-        print(",".join(headers)) 
+        print(",".join(headers))
 
-        for record in data[region]:
-            values = []
-            for column in headers:
-                values.append(str(record[column]))
-            print(",".join(values))
-
-    from read_data import read_data
-
-    regions, climate_values, headers = read_data()
+    regions, monthly_values, monthly_headers = read_monthly_data()
 
     print("\n------------------------------------------\n")
     print("Regions:", len(regions))
-    print("Values per region:", len(headers))
-    print("Column names:", headers)
-    print("First region's values:", climate_values[0])
+    print("Monthly datasets:", len(monthly_values))
+
+    for month in MONTHS:
+        print(f"\n{month}")
+        print("Parameters per region:", len(monthly_headers[month]))
+        print("Column names:", monthly_headers[month])
+        print("First region:", regions[0])
 
 print_data()

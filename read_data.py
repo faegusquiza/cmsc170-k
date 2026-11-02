@@ -2,13 +2,13 @@
 Regional Climate Data Processing Module
 
 This module reads, validates, and processes regional climate data from CSV
-files. It calculates average monthly and annual climate measurements across
-a specified year range and optionally applies Z-score standardization to
-prepare the data for clustering.
+files. It averages each calendar month across the selected years, then
+prepares one separate dataset per month for clustering.
 
-The module processes climate data for different regions, grid layers, and
-parameters. Each region is represented by a row, while each combination of
-grid layer, parameter, and time column is represented by a feature.
+In each monthly dataset, a row represents one region and the four columns
+contain precipitation, temperature, wind, and solar values. Each column can
+be standardized across regions. ANN is kept in the original records but is
+excluded from the monthly clustering datasets.
 
 Note:
     AI was used for proper code documentation and code insights.
@@ -170,14 +170,15 @@ def read_file(folder=DATA_FOLDER):
     return data # dictionary of regions and its climate records
 
 
-def regional_average(data, start_year=2001, end_year=2025, time_columns=MONTHS + ["ANN"]):
+def regional_average(data, start_year=2001, end_year=2025, time_columns=None):
     """
     Calculates the average climate measurements for each region across
     the selected year range.
 
-    The function calculates the average of each selected month and annual
-    measurement for every grid layer and parameter. It also generates
-    corresponding column headers for the resulting averages.
+    The function calculates the average of each selected calendar month
+    for every grid layer and parameter. For example, JAN temperature is
+    averaged across all selected years, separately for each region.
+    Annual values can still be selected explicitly with ["ANN"].
 
     Args:
         data (dict): Dictionary of regional climate records returned by
@@ -186,8 +187,8 @@ def regional_average(data, start_year=2001, end_year=2025, time_columns=MONTHS +
             Defaults to 2001.
         end_year (int): Last year included in the calculation.
             Defaults to 2025.
-        time_columns (list): Monthly or annual columns to include in the
-            calculation. Defaults to all months and ANN.
+        time_columns (list or None): Time columns to include. None selects
+            JAN to DEC. Use ["JAN"] to get four January values per region.
 
     Returns:
         tuple: A tuple containing:
@@ -204,8 +205,12 @@ def regional_average(data, start_year=2001, end_year=2025, time_columns=MONTHS +
         print("Error: Provide climate data and a valid year range.")
         return [], [], []
 
-    if time_columns is None: # use all monthly and annual columns if none were specified
-        time_columns = TIME_COLUMNS
+    if time_columns is None: # use JAN to DEC by default
+        time_columns = MONTHS
+
+    if len(time_columns) == 0:
+        print("Error: Select at least one monthly or annual column.")
+        return [], [], []
 
     selected_columns = []
     for column in time_columns:
@@ -217,7 +222,7 @@ def regional_average(data, start_year=2001, end_year=2025, time_columns=MONTHS +
     # find the parameters present in the selected years
     parameters = [] # stores each different grid layer and parameter pair
 
-    # goes through each region and its climate to get grid later and parameter pairs
+    # goes through each region and its climate records to get grid layer and parameter pairs
     for region in data: 
         for record in data[region]:
             if start_year <= record["YEAR"] <= end_year:
@@ -280,7 +285,7 @@ def standardize_data(climate_values):
     Args:
         climate_values (list): A two-dimensional list of climate
             measurements, where each row represents a region and
-            each column represents a climate feature.
+            each column represents one parameter's value for a selected month.
 
     Returns:
         list: A two-dimensional list containing the standardized
@@ -347,10 +352,12 @@ def standardize_data(climate_values):
 # function that future clustering methods can import
 def read_data(folder=DATA_FOLDER, start_year=2001, end_year=2025, time_columns=None, standardize=True):
     """
-    Reads, processes, and prepares regional climate data for clustering.
+    Reads and prepares the selected time columns for clustering.
 
     This function combines the CSV reading, regional averaging, and
-    optional standardization steps into one process.
+    optional standardization steps into one process. For one monthly run,
+    use time_columns=["JAN"], ["FEB"], etc. Use read_monthly_data() to
+    prepare all 12 separate monthly datasets at once.
 
     Args:
         folder (str or Path): Directory containing the regional CSV files.
@@ -360,7 +367,8 @@ def read_data(folder=DATA_FOLDER, start_year=2001, end_year=2025, time_columns=N
         end_year (int): Last year included in the calculation.
             Defaults to 2025.
         time_columns (list or None): Monthly or annual columns to include.
-            Defaults to None, which selects all months and ANN.
+            Defaults to None, which selects all months.
+            This default returns 48 columns together; ["JAN"] returns four.
         standardize (bool): Determines whether to apply Z-score
             standardization to the calculated climate measurements.
             Defaults to True.
@@ -390,3 +398,48 @@ def read_data(folder=DATA_FOLDER, start_year=2001, end_year=2025, time_columns=N
             return [], [], []
 
     return regions, climate_values, headers
+
+
+# one separate dataset for each calendar month
+def read_monthly_data(folder=DATA_FOLDER, start_year=2001, end_year=2025, standardize=True):
+    """
+    Prepares 12 separate monthly datasets using the saved regional records.
+
+    Each month's values are averaged across the selected years. In the
+    current dataset, each month contains 18 regions and four parameters.
+    Standardization is calculated separately for each month's four columns.
+    Year-to-year fluctuations are averaged out; ANN is not included.
+
+    Args:
+        folder (str or Path): Folder containing the regional CSV files.
+        start_year (int): First year included. Defaults to 2001.
+        end_year (int): Last year included. Defaults to 2025.
+        standardize (bool): True returns standardized values. False returns
+            the monthly averages in their original units.
+
+    Returns:
+        tuple: Region names, a dictionary of monthly values, and a dictionary
+            of monthly column names. For example, monthly_values["JAN"][0]
+            contains the four January values for regions[0].
+            Returns ([], {}, {}) if reading or preparation fails.
+    """
+    data = read_file(folder) # read the original CSV files for all 12 months
+    if not data:
+        return [], {}, {}
+
+    monthly_values, monthly_headers = {}, {}
+    regions = []
+    for month in MONTHS:
+        regions, values, headers = regional_average(data, start_year, end_year, [month])
+        if not values:
+            return [], {}, {} # stop if any selected year or parameter is missing
+
+        if standardize:
+            values = standardize_data(values) # compare regions using this month's column averages and deviations
+            if not values:
+                return [], {}, {}
+
+        monthly_values[month] = values # each month gets its own list of regional values
+        monthly_headers[month] = headers # e.g. MERRA2_T2M_JAN
+
+    return regions, monthly_values, monthly_headers
