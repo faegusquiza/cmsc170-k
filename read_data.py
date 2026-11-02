@@ -1,3 +1,20 @@
+"""
+Regional Climate Data Processing Module
+
+This module reads, validates, and processes regional climate data from CSV
+files. It calculates average monthly and annual climate measurements across
+a specified year range and optionally applies Z-score standardization to
+prepare the data for clustering.
+
+The module processes climate data for different regions, grid layers, and
+parameters. Each region is represented by a row, while each combination of
+grid layer, parameter, and time column is represented by a feature.
+
+Note:
+    AI was used for proper code documentation and code insights.
+    The code is still our work.
+"""
+
 import math
 from pathlib import Path
 
@@ -7,8 +24,27 @@ DATA_FOLDER = "data_gathering/regions" # the folder containing the CSV files pro
 MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 TIME_COLUMNS = MONTHS + ["ANN"]
 
-# reads all regional CSV files and keeps their original monthly and annual values
 def read_file(folder=DATA_FOLDER):
+    """
+    Reads and validates all regional CSV files in the specified folder.
+
+    Each CSV file represents a region and contains monthly and annual
+    climate measurements for different parameters, years, and grid layers.
+    The function checks the file structure, data types, missing values,
+    and duplicate records before storing the data.
+
+    Args:
+        folder (str or Path): Directory containing the regional CSV files.
+            Defaults to DATA_FOLDER.
+
+    Returns:
+        dict: A dictionary where each key is a region name and its value
+            is a list of climate records. Each record contains the
+            parameter, year, grid layer, and monthly and annual values.
+            Returns an empty dictionary if an error occurs or no valid
+            regional CSV files are found.
+    """
+
     data = {}
     folder = Path(folder) 
 
@@ -134,9 +170,36 @@ def read_file(folder=DATA_FOLDER):
     return data # dictionary of regions and its climate records
 
 
-# averages climate values for each region per month across all selected year
-# example: average T2M for January = (sum of January T2M from 2001 to 2025) / 25
 def regional_average(data, start_year=2001, end_year=2025, time_columns=MONTHS + ["ANN"]):
+    """
+    Calculates the average climate measurements for each region across
+    the selected year range.
+
+    The function calculates the average of each selected month and annual
+    measurement for every grid layer and parameter. It also generates
+    corresponding column headers for the resulting averages.
+
+    Args:
+        data (dict): Dictionary of regional climate records returned by
+            read_file().
+        start_year (int): First year included in the calculation.
+            Defaults to 2001.
+        end_year (int): Last year included in the calculation.
+            Defaults to 2025.
+        time_columns (list): Monthly or annual columns to include in the
+            calculation. Defaults to all months and ANN.
+
+    Returns:
+        tuple: A tuple containing:
+            - regions (list): Sorted list of region names.
+            - avg (list): Regional averages, with each row containing
+              the selected climate measurements for one region.
+            - headers (list): Column names corresponding to the
+              calculated averages.
+
+            Returns three empty lists if an error occurs.
+    """
+    
     if not data or start_year > end_year:
         print("Error: Provide climate data and a valid year range.")
         return [], [], []
@@ -205,9 +268,27 @@ def regional_average(data, start_year=2001, end_year=2025, time_columns=MONTHS +
 
     return regions, avg, headers
 
-# puts each column on a comparable scale before calculating distances to avoid large numbers dominating
-# each new value = (original value - column mean) / column standard deviation
 def standardize_data(climate_values):
+    """
+    Standardizes climate measurements using Z-score normalization.
+
+    Each column is standardized independently using its mean and
+    population standard deviation across all regions. This places
+    measurements on a comparable scale before calculating distances
+    between regions.
+
+    Args:
+        climate_values (list): A two-dimensional list of climate
+            measurements, where each row represents a region and
+            each column represents a climate feature.
+
+    Returns:
+        list: A two-dimensional list containing the standardized
+            climate measurements. Columns with a standard deviation
+            of zero are assigned 0.0 for all regions.
+            Returns an empty list if the input data is invalid.
+    """
+
     # # check if the data or the first region's list is empty
     if not climate_values or not climate_values[0]: 
         print("Error: No climate values to standardize.")
@@ -265,6 +346,36 @@ def standardize_data(climate_values):
 
 # function that future clustering methods can import
 def read_data(folder=DATA_FOLDER, start_year=2001, end_year=2025, time_columns=None, standardize=True):
+    """
+    Reads, processes, and prepares regional climate data for clustering.
+
+    This function combines the CSV reading, regional averaging, and
+    optional standardization steps into one process.
+
+    Args:
+        folder (str or Path): Directory containing the regional CSV files.
+            Defaults to DATA_FOLDER.
+        start_year (int): First year included in the calculation.
+            Defaults to 2001.
+        end_year (int): Last year included in the calculation.
+            Defaults to 2025.
+        time_columns (list or None): Monthly or annual columns to include.
+            Defaults to None, which selects all months and ANN.
+        standardize (bool): Determines whether to apply Z-score
+            standardization to the calculated climate measurements.
+            Defaults to True.
+
+    Returns:
+        tuple: A tuple containing:
+            - regions (list): Sorted list of region names.
+            - climate_values (list): Processed climate measurements,
+              where each row represents a region.
+            - headers (list): Column names corresponding to the
+              climate measurements.
+
+            Returns three empty lists if an error occurs.
+    """
+    
     data = read_file(folder)
     if not data:
         return [], [], []
