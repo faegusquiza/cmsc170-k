@@ -1,4 +1,4 @@
-# Philippine Yearly Climate Zone Clustering
+# 2001 - 2026 Philippine Monthly Climate Zone Clustering
 
 **CMSC 170 Project**
 
