@@ -8,10 +8,8 @@ regions before clustering.
 
 The initial centroids are k randomly picked regions. Each region is then
 assigned to its nearest centroid, and each centroid is moved to the average
-of its regions, until the centroids no longer change. Because the result
-depends on the random starting regions, the algorithm is repeated NUM_RUNS
-times and the run with the lowest within-cluster sum of squared distances
-is kept.
+of its regions, until the centroids no longer change. Because the starting
+regions are random, the clusters can differ from one run to the next.
 
 Note:
     AI was used for proper code documentation and code insights.
@@ -33,9 +31,6 @@ START_YEAR = 2001
 END_YEAR = 2025
 OUTPUT_FOLDER = Path("results/kmeans/monthly")
 
-RANDOM_SEED = 170 # fixed seed so every run gives the same clusters
-NUM_RUNS = 500 # number of random starts per month; the lowest SSE is kept
-MAX_ITERATIONS = 100 # stopping limit in case the centroids never settle
 
 # calculates the Euclidean distance between two regions' lists of climate values
 def euclidean_distance(first, second):
@@ -82,37 +77,8 @@ def update_centroids(climate_values, assignments, centroids):
 
     return new_centroids
 
-# within-cluster sum of squared distances (the value K-means tries to minimize)
-def within_cluster_sse(climate_values, assignments, centroids):
-    total = 0.0
-    for i in range(len(climate_values)):
-        total += euclidean_distance(climate_values[i], centroids[assignments[i]]) ** 2
-    return total
-
-# one K-means run from the given starting regions
-def kmeans_single_run(climate_values, initial_indices):
-    centroids = []
-    for index in initial_indices:
-        centroids.append(list(climate_values[index])) # each centroid starts on one region
-
-    assignments = assign_clusters(climate_values, centroids)
-    iterations = 0
-
-    while iterations < MAX_ITERATIONS:
-        new_centroids = update_centroids(climate_values, assignments, centroids)
-        iterations += 1
-
-        if new_centroids == centroids:
-            break # stop when the centroids no longer change
-
-        centroids = new_centroids
-        assignments = assign_clusters(climate_values, centroids) # regroup using the moved centroids
-
-    sse = within_cluster_sse(climate_values, assignments, centroids)
-    return assignments, centroids, iterations, sse
-
-# runs K-means NUM_RUNS times with random starting regions and keeps the run with the lowest SSE
-def kmeans_clustering(climate_values, k=4, seed=RANDOM_SEED, num_runs=NUM_RUNS):
+# starts with k random regions as centroids, then repeatedly regroups the regions and moves the centroids
+def kmeans_clustering(climate_values, k=4):
     if not climate_values or not climate_values[0]:
         print("Error: No climate values to cluster.")
         return [], [], {}
@@ -140,50 +106,52 @@ def kmeans_clustering(climate_values, k=4, seed=RANDOM_SEED, num_runs=NUM_RUNS):
     if k < 1 or k > num_regions:
         print(f"Error: Enter a number of clusters from 1 to {num_regions}.")
         return [], [], {}
-    if type(num_runs) != int or num_runs < 1:
-        print("Error: The number of runs must be a positive integer.")
-        return [], [], {}
 
-    generator = random.Random(seed) # separate generator so other random calls do not change the results
-    best = None
+    # choose k different random regions as the initial centroids
+    initial_indices = []
+    while len(initial_indices) < k:
+        random_index = random.choice(range(num_regions))
+        if random_index not in initial_indices: # skip a region that is already a centroid
+            initial_indices.append(random_index)
 
-    for run in range(num_runs):
-        initial_indices = generator.sample(range(num_regions), k) # k different regions as starting centroids
-        assignments, centroids, iterations, sse = kmeans_single_run(climate_values, initial_indices)
+    centroids = []
+    for index in initial_indices:
+        centroids.append(list(climate_values[index])) # each centroid starts on one region
 
-        if best is None or sse < best["sse"]: # keep the most compact clustering found so far
-            best = {
-                "run": run + 1,
-                "initial_indices": initial_indices,
-                "assignments": assignments,
-                "centroids": centroids,
-                "iterations": iterations,
-                "sse": sse,
-            }
+    assignments = assign_clusters(climate_values, centroids)
+    iterations = 0
+
+    while True:
+        new_centroids = update_centroids(climate_values, assignments, centroids)
+        iterations += 1
+
+        if new_centroids == centroids:
+            break # stop when the centroids no longer change
+
+        centroids = new_centroids
+        assignments = assign_clusters(climate_values, centroids) # regroup using the moved centroids
 
     # assign cluster numbers starting at 1, in order of their first region
     # (the same numbering used by the hierarchical clustering results)
     new_numbers = {}
-    for position in best["assignments"]:
+    for position in assignments:
         if position not in new_numbers:
             new_numbers[position] = len(new_numbers) + 1
 
     labels = []
-    for position in best["assignments"]:
+    for position in assignments:
         labels.append(new_numbers[position]) # shows which cluster that region belongs to
 
-    centroids = [None] * len(new_numbers)
+    final_centroids = [None] * len(new_numbers)
     for position in new_numbers:
-        centroids[new_numbers[position] - 1] = best["centroids"][position] # centroids[0] belongs to cluster 1
+        final_centroids[new_numbers[position] - 1] = centroids[position] # final_centroids[0] belongs to cluster 1
 
     details = {
-        "run": best["run"],
-        "initial_indices": best["initial_indices"],
-        "iterations": best["iterations"],
-        "sse": best["sse"],
+        "initial_indices": initial_indices,
+        "iterations": iterations,
     }
 
-    return labels, centroids, details # returns each region's cluster, the final centroids, and the run details
+    return labels, final_centroids, details # returns each region's cluster, the final centroids, and the run details
 
 # averages each cluster's original values so the clusters can be read in their real units
 def cluster_averages(averages, labels):
@@ -296,9 +264,9 @@ def write_output(month, regions, averages, climate_values, headers, labels, cent
     # summary of clusters and their members
     starting_regions = [regions[index] for index in details["initial_indices"]]
     lines = [f"{month} ({START_YEAR}-{END_YEAR}): K-means Clustering"]
-    lines.append(f"k = {k}; seed = {RANDOM_SEED}; best of {NUM_RUNS} runs (run {details['run']})")
+    lines.append(f"k = {k}")
     lines.append(f"Initial centroids: {', '.join(starting_regions)}")
-    lines.append(f"Iterations: {details['iterations']}; within-cluster SSE: {details['sse']:.4f}")
+    lines.append(f"Iterations: {details['iterations']}")
     for label in range(1, max(labels) + 1):
         members = []
         for i in range(len(regions)):
