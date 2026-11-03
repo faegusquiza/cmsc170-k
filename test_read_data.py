@@ -12,7 +12,9 @@ def print_data():
         print(f"\n{region}")
         print(",".join(headers))
 
-    regions, monthly_values, monthly_headers = read_monthly_data()
+    regions, monthly_values, monthly_headers, monthly_averages = read_monthly_data()
+    if not monthly_values:
+        return # the reader already printed the error
 
     print("\n------------------------------------------\n")
     print("Regions:", len(regions))

@@ -298,7 +298,7 @@ def get_k(num_regions):
 def main():
     # .\.venv\Scripts\python.exe .\kmeans_clustering.py
 
-    regions, monthly_averages, monthly_headers = read_monthly_data(start_year=START_YEAR, end_year=END_YEAR, standardize=False)
+    regions, monthly_values, monthly_headers, monthly_averages = read_monthly_data(start_year=START_YEAR, end_year=END_YEAR)
 
     if not monthly_averages:
         return # the reader already printed the error
@@ -310,9 +310,7 @@ def main():
     for month in MONTHS:
         averages = monthly_averages[month] # 18 rows with four averages each in the current data
         headers = monthly_headers[month] # this month's four parameter names
-        climate_values = standardize_data(averages) # standardize only this month's four columns across regions
-        if not climate_values:
-            return
+        climate_values = monthly_values[month]
 
         labels, centroids, details = kmeans_clustering(climate_values, k)
         if not labels:

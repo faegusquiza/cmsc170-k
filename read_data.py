@@ -6,8 +6,8 @@ files. It averages each calendar month across the selected years, then
 prepares one separate dataset per month for clustering.
 
 In each monthly dataset, a row represents one region and the four columns
-contain precipitation, temperature, wind, and solar values. Each column can
-be standardized across regions. ANN is kept in the original records but is
+contain precipitation, temperature, wind, and solar values. Each column is
+standardized across regions. ANN is kept in the original records but is
 excluded from the monthly clustering datasets.
 
 Note:
@@ -350,12 +350,12 @@ def standardize_data(climate_values):
     return scaled
 
 # function that future clustering methods can import
-def read_data(folder=DATA_FOLDER, start_year=2001, end_year=2025, time_columns=None, standardize=True):
+def read_data(folder=DATA_FOLDER, start_year=2001, end_year=2025, time_columns=None):
     """
     Reads and prepares the selected time columns for clustering.
 
     This function combines the CSV reading, regional averaging, and
-    optional standardization steps into one process. For one monthly run,
+    standardization steps into one process. For one monthly run,
     use time_columns=["JAN"], ["FEB"], etc. Use read_monthly_data() to
     prepare all 12 separate monthly datasets at once.
 
@@ -369,14 +369,11 @@ def read_data(folder=DATA_FOLDER, start_year=2001, end_year=2025, time_columns=N
         time_columns (list or None): Monthly or annual columns to include.
             Defaults to None, which selects all months.
             This default returns 48 columns together; ["JAN"] returns four.
-        standardize (bool): Determines whether to apply Z-score
-            standardization to the calculated climate measurements.
-            Defaults to True.
 
     Returns:
         tuple: A tuple containing:
             - regions (list): Sorted list of region names.
-            - climate_values (list): Processed climate measurements,
+            - climate_values (list): Standardized climate measurements,
               where each row represents a region.
             - headers (list): Column names corresponding to the
               climate measurements.
@@ -392,16 +389,15 @@ def read_data(folder=DATA_FOLDER, start_year=2001, end_year=2025, time_columns=N
     if not climate_values:
         return [], [], []
 
-    if standardize:
-        climate_values = standardize_data(climate_values)
-        if not climate_values:
-            return [], [], []
+    climate_values = standardize_data(climate_values)
+    if not climate_values:
+        return [], [], []
 
     return regions, climate_values, headers
 
 
 # one separate dataset for each calendar month
-def read_monthly_data(folder=DATA_FOLDER, start_year=2001, end_year=2025, standardize=True):
+def read_monthly_data(folder=DATA_FOLDER, start_year=2001, end_year=2025):
     """
     Prepares 12 separate monthly datasets using the saved regional records.
 
@@ -414,32 +410,33 @@ def read_monthly_data(folder=DATA_FOLDER, start_year=2001, end_year=2025, standa
         folder (str or Path): Folder containing the regional CSV files.
         start_year (int): First year included. Defaults to 2001.
         end_year (int): Last year included. Defaults to 2025.
-        standardize (bool): True returns standardized values. False returns
-            the monthly averages in their original units.
 
     Returns:
-        tuple: Region names, a dictionary of monthly values, and a dictionary
-            of monthly column names. For example, monthly_values["JAN"][0]
-            contains the four January values for regions[0].
-            Returns ([], {}, {}) if reading or preparation fails.
+        tuple: Region names, standardized monthly values, monthly column
+            names, and the original monthly averages. The three dictionaries
+            have keys JAN to DEC. For example, monthly_values["JAN"][0]
+            contains four standardized January values for regions[0], while
+            monthly_averages["JAN"][0] contains its original averages.
+            Returns ([], {}, {}, {}) if reading or preparation fails.
     """
     data = read_file(folder) # read the original CSV files for all 12 months
     if not data:
-        return [], {}, {}
+        return [], {}, {}, {}
 
     monthly_values, monthly_headers = {}, {}
+    monthly_averages = {} # original averages for saved files and graph axes
     regions = []
     for month in MONTHS:
         regions, values, headers = regional_average(data, start_year, end_year, [month])
         if not values:
-            return [], {}, {} # stop if any selected year or parameter is missing
+            return [], {}, {}, {} # stop if any selected year or parameter is missing
 
-        if standardize:
-            values = standardize_data(values) # compare regions using this month's column averages and deviations
-            if not values:
-                return [], {}, {}
+        monthly_averages[month] = values # keep the averages before standardizing them
+        values = standardize_data(values) # compare regions using this month's column averages and deviations
+        if not values:
+            return [], {}, {}, {}
 
         monthly_values[month] = values # each month gets its own list of regional values
         monthly_headers[month] = headers # e.g. MERRA2_T2M_JAN
 
-    return regions, monthly_values, monthly_headers
+    return regions, monthly_values, monthly_headers, monthly_averages
