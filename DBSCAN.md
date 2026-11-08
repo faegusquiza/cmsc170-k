@@ -1,0 +1,1 @@
+MINPTS = $\text(no. of dimensions) + 1$
