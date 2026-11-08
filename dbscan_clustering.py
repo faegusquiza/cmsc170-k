@@ -35,6 +35,7 @@ def main():
 
         identify_neighbors(points, epsilon)
 
+
         core_points = identify_core_points(points, MINPTS)
 
         for point in core_points:
@@ -62,14 +63,18 @@ def cluster(point: Point, group: int):
     if point.cluster != -1:
         return
 
+    point.cluster = group
+
     queue = list(point.neighbors)
     visited = set()
 
     while queue:
-        neighbor = queue.pop
+        neighbor = queue.pop()
 
         if neighbor in visited:
             continue
+
+        visited.add(neighbor)
 
         if neighbor.cluster == -1:
             neighbor.cluster = group
@@ -77,7 +82,7 @@ def cluster(point: Point, group: int):
         if neighbor.is_core:
             queue.extend(candidate for candidate in neighbor.neighbors if candidate not in visited and candidate.cluster == -1)
 
-def identify_core_points(points: list[Point], minpts: int) -> list:
+def identify_core_points(points: list[Point], minpts: int) -> list[Point]:
     core_points = []
 
     for point in points:
@@ -92,7 +97,7 @@ def identify_core_points(points: list[Point], minpts: int) -> list:
 
 def calculate_epsilon(points_coordinates):
     # Calculate for the K Distance
-    k_distance = get_k_distance(points_coordinates, MINPTS)
+    k_distance = get_k_distance(points_coordinates, MINPTS - 1)
 
     # graph_k_distance(k_distance)
 
@@ -120,12 +125,17 @@ def kneedle(x: list[float], y: list[float]):
     x_normalized = normalize(x)
     y_normalized = normalize(y)
 
+    graph_function("Normalized", x_normalized, y_normalized)
+
     # Difference
     y_difference = [x_normalized[i] - y_normalized[i] for i in range(len(x))]
 
     # Local Maxima
     y_local_maxima = [y_difference[i] for i in range(1, len(y_difference)-1) if y_difference[i-1] < y_difference[i] and y_difference[i+1] < y_difference[i]]
 
+    graph_regression("D_difference", x_normalized, y_difference, y_local_maxima)
+
+    print("y_local_maxima:", y_local_maxima)
     return y_difference.index(y_local_maxima[0])
 
 def normalize(l: list[float]):
@@ -159,33 +169,6 @@ def get_k_distance(data_points: list[float], k):
         k_distances.append(distances[k-1])
 
     return k_distances
-
-def get_curvatures(x: list[float], coefficients: list[float]):
-    first_derivative = get_differential_coefficients(coefficients)
-    second_derivative = get_differential_coefficients(first_derivative)
-
-    k = []
-
-    first_derivative_x = solve(x, first_derivative)
-    second_derivative_x = solve(x, second_derivative)
-
-    for i in range(len(x)):
-        curvature = second_derivative_x[i]/((1 + first_derivative_x[i] ** 2) ** (3/2))
-
-        k.append(curvature)
-
-    return k
-
-def get_differential_coefficients(coefficients):
-    differential_coefficients = coefficients[:]
-
-    for degree, coefficient in enumerate(coefficients):
-        differential_coefficients[degree] *= max(0, degree-1)
-
-    differential_coefficients += [0]
-
-    return differential_coefficients[1:]
-
     
 def find_best_fit_regression(x: list[float], y: list[float], max_degree = 10):
     root_mean_squared_errors = []
