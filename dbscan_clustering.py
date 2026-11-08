@@ -1,6 +1,7 @@
 import math
 from pathlib import Path
 import matplotlib.pyplot as plt
+from dataclasses import dataclass
 
 from read_data import MONTHS, read_monthly_data, standardize_data
 
@@ -9,14 +10,82 @@ OUTPUT_FOLDER = Path("results/dbscan")
 # DBSCAN Settings
 MINPTS = 5
 
+class Point:
+    def __init__(self, coordinates):
+        self.coordinates = coordinates
+        self.is_core = False
+        self.neighbors = []
+        self.cluster = -1
+
+    def __str__(self):
+        coordinates = [f"{coord:.2f}" for coord in self.coordinates]
+
+        return f"coordinates: {coordinates}, is_core: {self.is_core}, cluster: {self.cluster}"
+
 def main():
     regions, monthly_values, monthly_headers, monthly_averages = read_monthly_data()
 
-    epsilon = calculate_epsilon(monthly_averages["JAN"])
+    for month in MONTHS:
+        print(month)
+        points = [Point(coordinate) for coordinate in monthly_averages[month]]
 
-def calculate_epsilon(data_points):
+        epsilon = calculate_epsilon([point.coordinates for point in points])
+
+        clusters_count = 0
+
+        identify_neighbors(points, epsilon)
+
+        core_points = identify_core_points(points, MINPTS)
+
+        for point in core_points:
+            print(point)
+            if point.cluster != -1:
+                continue
+
+            clusters_count += 1
+            cluster(point, clusters_count)
+
+        for point in points:
+            print(point)
+
+def identify_neighbors(points: list[Point], epsilon: float):
+    for point_a in points:
+        for point_b in points:
+            # Skip similar points
+            if point_a is point_b:
+                continue
+
+            if get_euclidian_distance(point_a.coordinates, point_b.coordinates) <= epsilon:
+                point_a.neighbors.append(point_b)
+
+def cluster(point: Point, group: int):
+    if point.cluster != -1:
+        return
+    
+    point.cluster = group
+    
+    for neighbor in point.neighbors:
+        if neighbor.is_core:
+            cluster(neighbor, group)
+        else:
+            point.cluster = group
+
+def identify_core_points(points: list[Point], minpts: int) -> list:
+    core_points = []
+
+    for point in points:
+        if len(point.neighbors) + 1 < minpts:
+            continue
+        
+        point.is_core = True
+        core_points.append(point)
+
+    return core_points
+
+
+def calculate_epsilon(points_coordinates):
     # Calculate for the K Distance
-    k_distance = get_k_distance(data_points)
+    k_distance = get_k_distance(points_coordinates, MINPTS)
 
     # graph_k_distance(k_distance)
 
@@ -34,7 +103,7 @@ def calculate_epsilon(data_points):
 
     epsilon = k_distance[knee]
 
-    return k_distance
+    return epsilon
 
 def kneedle(x: list[float], y: list[float]):
     if len(x) != len(y):
@@ -65,12 +134,24 @@ def normalize(l: list[float]):
     return l_normalized
 
 
-def get_k_distance(data_points: list[float]):
-    distance_matrix = get_distance_matrix(data_points)
+def get_k_distance(data_points: list[float], k):
+    k_distances = []
 
-    distance_matrix.sort()
+    for point_a in data_points:
+        distances = []
 
-    return distance_matrix
+        for point_b in data_points:
+            if point_a is point_b:
+                continue
+
+            distance = get_euclidian_distance(point_a, point_b)
+            distances.append(distance)
+
+        distances.sort()
+
+        k_distances.append(distances[k-1])
+
+    return k_distances
 
 def get_curvatures(x: list[float], coefficients: list[float]):
     first_derivative = get_differential_coefficients(coefficients)
@@ -280,14 +361,14 @@ def get_distance_matrix(data_points):
 
     return distance_matrix
 
-def get_euclidian_distance(a, b):
-    if (len(a) != len(b)):
-        raise ArithmeticError(f"{a} and {b} must have the same length")
+def get_euclidian_distance(coordinates_a, coordinates_b):
+    if (len(coordinates_a) != len(coordinates_b)):
+        raise ArithmeticError(f"{coordinates_a} and {coordinates_b} must have the same length")
     
     distance = 0
 
-    for i in range(len(a)):
-        distance += (a[i] - b[i]) ** 2
+    for i in range(len(coordinates_a)):
+        distance += (coordinates_a[i] - coordinates_b[i]) ** 2
 
     distance **= 0.5
 
