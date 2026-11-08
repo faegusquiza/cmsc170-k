@@ -1,17 +1,23 @@
 import math
 from pathlib import Path
 import matplotlib.pyplot as plt
+from collections import defaultdict
 from dataclasses import dataclass
+import csv 
 
 from read_data import MONTHS, read_monthly_data, standardize_data
 
-OUTPUT_FOLDER = Path("results/dbscan")
+OUTPUT_FOLDER = Path("results/dbscan/monthly")
 
 # DBSCAN Settings
 MINPTS = 5
 
+# Plotting Settings
+CLUSTER_COLORS = []
+
 class Point:
-    def __init__(self, coordinates):
+    def __init__(self, region, coordinates):
+        self.region = region
         self.coordinates = coordinates
         self.is_core = False
         self.neighbors = []
@@ -23,31 +29,147 @@ class Point:
         return f"coordinates: {coordinates}, is_core: {self.is_core}, cluster: {self.cluster}"
 
 def main():
-    regions, monthly_values, monthly_headers, monthly_averages = read_monthly_data()
+    regions, monthly_values, monthly_parameters, monthly_averages = read_monthly_data()
 
     for month in MONTHS:
-        print(month)
-        points = [Point(coordinate) for coordinate in monthly_averages[month]]
+        print(f"Clustering {month}")
 
+        points = [Point(regions[i], monthly_averages[month][i]) for i in range(len(regions))]
         epsilon = calculate_epsilon([point.coordinates for point in points])
-
-        clusters_count = 0
+        clusters_count = -1
 
         identify_neighbors(points, epsilon)
-
 
         core_points = identify_core_points(points, MINPTS)
 
         for point in core_points:
-            print(point)
             if point.cluster != -1:
                 continue
 
             clusters_count += 1
             cluster(point, clusters_count)
 
+        # Create output directory if it doesn"t exist
+        graph_clusters(points, month, monthly_parameters[month])
+        graph_clusters_4d(points, month, monthly_parameters[month])
+        save_clusters(points, month)
+
+def save_clusters(points: list[Point], month):
+    output_directory = OUTPUT_FOLDER / month
+    output_directory.mkdir(parents=True, exist_ok=True)
+
+    output_path = output_directory / "clusters.csv"
+
+    with open(output_path, "w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+
+        writer.writerow(["REGION", "CLUSTER"])
         for point in points:
-            print(point)
+            if point.cluster != -1:
+                writer.writerow([point.region, point.cluster + 1])
+            else:
+                writer.writerow([point.region, -1])
+
+    print(f"Saved: {output_path}")
+
+def graph_clusters(points, month, parameters):
+    output_directory = OUTPUT_FOLDER / month
+    output_directory.mkdir(parents=True, exist_ok=True)
+
+    clusters = {}
+
+    for point in points:
+        clusters.setdefault(point.cluster, []).append(point.coordinates)
+
+    xlabel = parameters[0]
+
+    for i in range(1, len(parameters)):
+        plt.figure(figsize=(10, 7))
+
+        for cluster_id, coordinates in clusters.items():
+            x = [point[0] for point in coordinates]
+            y = [point[i] for point in coordinates]
+
+            if cluster_id == -1:
+                plt.scatter(
+                    x, y,
+                    color="black",
+                    marker="x",
+                    label="Noise"
+                )
+            else:
+                plt.scatter(
+                    x, y,
+                    label=f"Cluster {cluster_id + 1}"
+                )
+
+        ylabel = parameters[i]
+
+        plt.title(f"DBSCAN Clustering - {month}")
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.legend()
+        plt.grid(alpha=0.3)
+        plt.tight_layout()
+
+        output_path = output_directory / f"{xlabel.lower()}_vs_{ylabel.lower()}.png"
+
+        plt.savefig(output_path, dpi=300, bbox_inches="tight")
+        plt.close()
+
+        print(f"Saved: {output_path}")
+
+def graph_clusters_4d(points, month, parameters):
+    """
+    Visualize DBSCAN clustering results in four dimensions.
+
+    X, Y, Z represent the first three parameters.
+    Color represents the fourth parameter.
+    """
+
+    clusters = {}
+
+    for point in points:
+        clusters.setdefault(point.cluster, []).append(point.coordinates)
+
+    output_directory = OUTPUT_FOLDER / month
+    output_directory.mkdir(parents=True, exist_ok=True)
+
+    fig = plt.figure(figsize=(12, 9))
+    ax = fig.add_subplot(111, projection="3d")
+
+    for cluster_id, coordinates in clusters.items():
+
+        x = [point[0] for point in coordinates]
+        y = [point[1] for point in coordinates]
+        z = [point[2] for point in coordinates]
+        color_values = [point[3] for point in coordinates]
+
+        scatter = ax.scatter(
+            x, y, z,
+            c=color_values,
+            cmap="viridis",
+            marker="x" if cluster_id == -1 else "o",
+            label="Noise" if cluster_id == -1 else f"Cluster {cluster_id + 1}"
+        )
+
+    ax.set_title(f"DBSCAN 4D Clustering - {month}")
+    ax.set_xlabel(parameters[0])
+    ax.set_ylabel(parameters[1])
+    ax.set_zlabel(parameters[2])
+
+    colorbar = fig.colorbar(scatter, ax=ax, pad=0.1)
+    colorbar.set_label(parameters[3])
+
+    ax.legend()
+    plt.tight_layout()
+
+    output_path = output_directory / f"clusters_4d.png"
+
+    plt.savefig(output_path, dpi=300, bbox_inches="tight")
+    plt.close()
+
+    print(f"Saved: {output_path}")
 
 def identify_neighbors(points: list[Point], epsilon: float):
     for point_a in points:
@@ -127,6 +249,9 @@ def normalize(l: list[float]):
     l_max = max(l)
     l_min = min(l)
     denominator = l_max - l_min
+
+    if denominator == 0:
+        return [0.0] * len(values)
 
     l_normalized = []
 
@@ -326,7 +451,7 @@ def graph_regression(title, x, y, data_points):
     plt.show()
 
 def graph_k_distance(k_distance):
-    plt.plot(range(len(k_distance)), k_distance, linestyle='-')
+    plt.plot(range(len(k_distance)), k_distance, linestyle="-")
 
     plt.title("K-distance")
     plt.xlabel("No. of Paired Points")
