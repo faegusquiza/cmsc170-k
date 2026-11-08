@@ -61,14 +61,21 @@ def identify_neighbors(points: list[Point], epsilon: float):
 def cluster(point: Point, group: int):
     if point.cluster != -1:
         return
-    
-    point.cluster = group
-    
-    for neighbor in point.neighbors:
+
+    queue = list(point.neighbors)
+    visited = set()
+
+    while queue:
+        neighbor = queue.pop
+
+        if neighbor in visited:
+            continue
+
+        if neighbor.cluster == -1:
+            neighbor.cluster = group
+
         if neighbor.is_core:
-            cluster(neighbor, group)
-        else:
-            point.cluster = group
+            queue.extend(candidate for candidate in neighbor.neighbors if candidate not in visited and candidate.cluster == -1)
 
 def identify_core_points(points: list[Point], minpts: int) -> list:
     core_points = []
