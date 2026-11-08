@@ -370,4 +370,5 @@ def get_euclidian_distance(coordinates_a, coordinates_b):
 
     return distance
 
-main()
+if __name__ == "__main__":
+    main()
