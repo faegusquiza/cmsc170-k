@@ -12,7 +12,7 @@ MINPTS = 5
 def main():
     regions, monthly_values, monthly_headers, monthly_averages = read_monthly_data()
 
-    eps = calculate_epsilon(monthly_averages["JAN"])
+    epsilon = calculate_epsilon(monthly_averages["JAN"])
 
 def calculate_epsilon(data_points):
     # Calculate for the K Distance
@@ -32,7 +32,9 @@ def calculate_epsilon(data_points):
     # Find the index of the knee using kneedle algorithm
     knee = kneedle(x, y)
 
-    print(knee, k_distance[knee])
+    epsilon = k_distance[knee]
+
+    return k_distance
 
 def kneedle(x: list[float], y: list[float]):
     if len(x) != len(y):
