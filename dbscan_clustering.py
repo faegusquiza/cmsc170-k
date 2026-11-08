@@ -121,22 +121,18 @@ def kneedle(x: list[float], y: list[float]):
     if len(x) != len(y):
         raise ArithmeticError("x and y must have the same length")
 
-    # Normalization
+    if len(x) < 3:
+        raise ValueError("At least three points are required.")
+
     x_normalized = normalize(x)
     y_normalized = normalize(y)
 
-    graph_function("Normalized", x_normalized, y_normalized)
+    differences = [
+        x_normalized[i] - y_normalized[i]
+        for i in range(len(x))
+    ]
 
-    # Difference
-    y_difference = [x_normalized[i] - y_normalized[i] for i in range(len(x))]
-
-    # Local Maxima
-    y_local_maxima = [y_difference[i] for i in range(1, len(y_difference)-1) if y_difference[i-1] < y_difference[i] and y_difference[i+1] < y_difference[i]]
-
-    graph_regression("D_difference", x_normalized, y_difference, y_local_maxima)
-
-    print("y_local_maxima:", y_local_maxima)
-    return y_difference.index(y_local_maxima[0])
+    return differences.index(max(differences))
 
 def normalize(l: list[float]):
     l_max = max(l)
@@ -316,6 +312,14 @@ def polynomial_regression(x, y, degree):
 
 def graph_function(title, x, y):
     plt.plot(x, y)
+
+    plt.title(title)
+
+    plt.show()
+
+def graph_local_maxima(title: str, x: list[float], y: list[float], x_local_maxima: list[float], y_local_maxima: list[float]):
+    plt.plot(x, y)
+    plt.scatter(x_local_maxima, y_local_maxima)
 
     plt.title(title)
 
