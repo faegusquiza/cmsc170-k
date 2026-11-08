@@ -99,19 +99,8 @@ def calculate_epsilon(points_coordinates):
     # Calculate for the K Distance
     k_distance = get_k_distance(points_coordinates, MINPTS - 1)
 
-    # graph_k_distance(k_distance)
-
-    # Find a function that best fits the matrix
     x = range(len(k_distance))
-    degree, coefficients = find_best_fit_regression(x, k_distance, max_degree=6)
-    y = solve(x, coefficients)
-
-    # Graph regression function
-    # graph_regression(f"{degree}-degree Regression", x, y, k_distance)
-    # graph_function(f"{degree}-degree Regression", x, y)
-
-    # Find the index of the knee using kneedle algorithm
-    knee = kneedle(x, y)
+    knee = kneedle(x, k_distance)
 
     epsilon = k_distance[knee]
 
@@ -148,6 +137,9 @@ def normalize(l: list[float]):
 
 
 def get_k_distance(data_points: list[float], k):
+    if k < 1 or k >= len(data_points):
+        raise ValueError("Invalid k value.")
+    
     k_distances = []
 
     for point_a in data_points:
