@@ -168,6 +168,8 @@ def get_k_distance(data_points: list[float], k):
 
         k_distances.append(distances[k-1])
 
+    k_distances.sort()
+
     return k_distances
     
 def find_best_fit_regression(x: list[float], y: list[float], max_degree = 10):
