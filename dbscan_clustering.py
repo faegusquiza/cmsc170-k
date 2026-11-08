@@ -251,7 +251,7 @@ def normalize(l: list[float]):
     denominator = l_max - l_min
 
     if denominator == 0:
-        return [0.0] * len(values)
+        return [0.0] * len(l)
 
     l_normalized = []
 
