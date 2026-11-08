@@ -31,11 +31,8 @@ Note:
     The code is still our work.
 """
 
-import math
 from pathlib import Path
 import matplotlib.pyplot as plt
-from collections import defaultdict
-from dataclasses import dataclass
 import csv
 
 from read_data import MONTHS, read_monthly_data, standardize_data
