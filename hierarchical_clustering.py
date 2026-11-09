@@ -16,7 +16,7 @@ import math
 import sys
 from pathlib import Path
 
-from read_data import MONTHS, read_monthly_data
+from read_data import MONTHS, read_data
 
 import matplotlib
 matplotlib.use("Agg") # save images without opening a separate window
@@ -170,8 +170,8 @@ def draw_dendrogram(regions, labels, merges, linkage, file, month):
     fig.savefig(file, dpi=160)
     plt.close(fig)
 
-# writes one month's assignments, original averages, standardized values, and merge history
-def write_output(month, regions, averages, climate_values, headers, labels, merges, k, linkage):
+# writes one month's clustering assignments, merge history, and summary
+def write_output(month, regions, labels, merges, k, linkage):
     folder = OUTPUT_FOLDER / month # e.g. results/hierarchical/monthly/month
     folder.mkdir(parents=True, exist_ok=True) # create this month's folder if needed
 
@@ -181,22 +181,6 @@ def write_output(month, regions, averages, climate_values, headers, labels, merg
     writer.writerow(["REGION", "CLUSTER"])
     for i in range(len(regions)):
         writer.writerow([regions[i], labels[i]])
-    f.close()
-
-    # climate averages
-    f = open(folder / "climate_averages.csv", "w", newline="", encoding="utf-8")
-    writer = csv.writer(f)
-    writer.writerow(["REGION"] + headers)
-    for i in range(len(regions)):
-        writer.writerow([regions[i]] + averages[i])
-    f.close()
-
-    # standardized climate values
-    f = open(folder / "standardized_values.csv", "w", newline="", encoding="utf-8")
-    writer = csv.writer(f)
-    writer.writerow(["REGION"] + headers)
-    for i in range(len(regions)):
-        writer.writerow([regions[i]] + climate_values[i])
     f.close()
 
     # merge history
@@ -251,7 +235,7 @@ def get_linkage():
 def main():
     # .\.venv\Scripts\python.exe .\hierarchical_clustering.py")
 
-    regions, monthly_values, monthly_headers, monthly_averages = read_monthly_data(start_year=START_YEAR, end_year=END_YEAR)
+    regions, monthly_values, monthly_headers, monthly_averages = read_data(start_year=START_YEAR, end_year=END_YEAR)
     
     if not monthly_averages:
         return # the reader already printed the error
@@ -262,8 +246,6 @@ def main():
     linkage = get_linkage()
 
     for month in MONTHS: 
-        averages = monthly_averages[month] # 18 rows with four averages each in the current data
-        headers = monthly_headers[month] # this month's four parameter names
         climate_values = monthly_values[month]
 
         labels, merges = hierarchical_clustering(climate_values, k, linkage)
@@ -271,7 +253,7 @@ def main():
             return # stop if clustering reported an error
 
         try:
-            write_output(month, regions, averages, climate_values, headers, labels, merges, k, linkage)
+            write_output(month, regions, labels, merges, k, linkage)
         except OSError:
             print(f"Error: Cannot save {month}'s results. Check whether the output folder is writable or a file is open.")
             return

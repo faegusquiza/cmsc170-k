@@ -10,15 +10,21 @@ contain precipitation, temperature, wind, and solar values. Each column is
 standardized across regions. ANN is kept in the original records but is
 excluded from the monthly clustering datasets.
 
+Run this file to create processed_data. Methods use read_data()
+to load the saved shared tables instead of recalculating or copying them.
+
 Note:
     AI was used for proper code documentation and code insights.
     The code is still our work.
 """
 
+import csv
+import json
 import math
 from pathlib import Path
 
 DATA_FOLDER = "data_gathering/regions" # the folder containing the CSV files produced by retriever.py
+PROCESSED_FOLDER = Path("processed_data") # shared monthly inputs for every method and metric
 
 # column names used in each regional CSV file
 MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
@@ -349,52 +355,6 @@ def standardize_data(climate_values):
 
     return scaled
 
-# function that future clustering methods can import
-def read_data(folder=DATA_FOLDER, start_year=2001, end_year=2025, time_columns=None):
-    """
-    Reads and prepares the selected time columns for clustering.
-
-    This function combines the CSV reading, regional averaging, and
-    standardization steps into one process. For one monthly run,
-    use time_columns=["JAN"], ["FEB"], etc. Use read_monthly_data() to
-    prepare all 12 separate monthly datasets at once.
-
-    Args:
-        folder (str or Path): Directory containing the regional CSV files.
-            Defaults to DATA_FOLDER.
-        start_year (int): First year included in the calculation.
-            Defaults to 2001.
-        end_year (int): Last year included in the calculation.
-            Defaults to 2025.
-        time_columns (list or None): Monthly or annual columns to include.
-            Defaults to None, which selects all months.
-            This default returns 48 columns together; ["JAN"] returns four.
-
-    Returns:
-        tuple: A tuple containing:
-            - regions (list): Sorted list of region names.
-            - climate_values (list): Standardized climate measurements,
-              where each row represents a region.
-            - headers (list): Column names corresponding to the
-              climate measurements.
-
-            Returns three empty lists if an error occurs.
-    """
-    
-    data = read_file(folder)
-    if not data:
-        return [], [], []
-
-    regions, climate_values, headers = regional_average(data, start_year, end_year, time_columns)
-    if not climate_values:
-        return [], [], []
-
-    climate_values = standardize_data(climate_values)
-    if not climate_values:
-        return [], [], []
-
-    return regions, climate_values, headers
-
 
 # one separate dataset for each calendar month
 def read_monthly_data(folder=DATA_FOLDER, start_year=2001, end_year=2025):
@@ -440,3 +400,171 @@ def read_monthly_data(folder=DATA_FOLDER, start_year=2001, end_year=2025):
         monthly_headers[month] = headers # e.g. MERRA2_T2M_JAN
 
     return regions, monthly_values, monthly_headers, monthly_averages
+
+
+def prepare_monthly_data(source_folder=DATA_FOLDER, output_folder=PROCESSED_FOLDER,
+                         start_year=2001, end_year=2025):
+    """
+    Prepare and save the shared monthly climate datasets.
+
+    Raw regional records are averaged and standardized once. For every month,
+    the standardized values and original-unit averages are saved together.
+    A small metadata file records the year range and number of regions.
+
+    Args:
+        source_folder (str or Path): Folder containing the raw regional CSVs.
+        output_folder (str or Path): Destination for the shared monthly folders.
+        start_year (int): First year to average. Defaults to 2001.
+        end_year (int): Last year to average. Defaults to 2025.
+
+    Returns:
+        bool: True if the datasets were saved, or False if preparation fails.
+
+    Output:
+        standardized_values.csv and climate_averages.csv under each month's
+        folder, plus metadata.json in the shared folder.
+    """
+    regions, monthly_values, monthly_headers, monthly_averages = read_monthly_data(
+        source_folder, start_year, end_year)
+    if not monthly_values:
+        return False
+
+    output_folder = Path(output_folder)
+    try:
+        for month in MONTHS:
+            folder = output_folder / month
+            folder.mkdir(parents=True, exist_ok=True)
+            with (folder / "standardized_values.csv").open("w", newline="", encoding="utf-8") as file:
+                writer = csv.writer(file)
+                writer.writerow(["REGION"] + monthly_headers[month])
+                for i in range(len(regions)):
+                    writer.writerow([regions[i]] + monthly_values[month][i])
+            with (folder / "climate_averages.csv").open("w", newline="", encoding="utf-8") as file:
+                writer = csv.writer(file)
+                writer.writerow(["REGION"] + monthly_headers[month])
+                for i in range(len(regions)):
+                    writer.writerow([regions[i]] + monthly_averages[month][i])
+
+        metadata = {"start_year": start_year, "end_year": end_year, "n_regions": len(regions)}
+        with (output_folder / "metadata.json").open("w", encoding="utf-8") as file:
+            json.dump(metadata, file, indent=2)
+    except OSError as error:
+        print(f"Error: Could not save the shared datasets: {error}")
+        return False
+
+    print(f"Saved {len(MONTHS)} shared monthly datasets to {output_folder}.")
+    return True
+
+
+def read_processed_file(path):
+    """
+    Read a saved climate table without recalculating its values.
+
+    Region names, column names, row lengths, and numeric values are checked.
+    Rows stay in the order used in the file.
+
+    Args:
+        path (str or Path): A shared standardized-values or climate-averages CSV.
+
+    Returns:
+        tuple: Region names, numeric feature rows, and feature column names.
+
+    Raises:
+        OSError: If the file cannot be read.
+        ValueError: If the table is empty or contains invalid data.
+    """
+    path = Path(path)
+    with path.open(newline="", encoding="utf-8-sig") as file:
+        rows = list(csv.reader(file))
+    if len(rows) < 2:
+        raise ValueError(f"{path}: expected a header and data rows.")
+    headers = rows[0]
+    if len(headers) < 2 or headers[0] != "REGION":
+        raise ValueError(f"{path}: the first column must be REGION, followed by feature columns.")
+    seen_headers = []
+    for header in headers:
+        if header.strip() == "" or header in seen_headers:
+            raise ValueError(f"{path}: column names must be nonempty and unique.")
+        seen_headers.append(header)
+
+    regions, values = [], []
+    for row in rows[1:]:
+        if len(row) != len(headers):
+            raise ValueError(f"{path}: every row must match the header size.")
+        region = row[0]
+        if region.strip() == "" or region in regions:
+            raise ValueError(f"{path}: region names must be nonempty and unique.")
+        feature_values = []
+        for value in row[1:]:
+            number = float(value)
+            if not math.isfinite(number):
+                raise ValueError(f"{path}: climate values must be finite numbers.")
+            feature_values.append(number)
+        regions.append(region)
+        values.append(feature_values)
+    return regions, values, headers[1:]
+
+
+def read_data(folder=PROCESSED_FOLDER, start_year=2001, end_year=2025):
+    """
+    Load the shared monthly datasets used by all clustering methods.
+
+    Saved year settings, feature headers, and region names are checked before
+    returning the same four items as read_monthly_data(). Values are read as
+    saved; no second averaging or standardization is performed.
+
+    Args:
+        folder (str or Path): Shared processed-data folder.
+        start_year (int): Expected first year. Defaults to 2001.
+        end_year (int): Expected last year. Defaults to 2025.
+
+    Returns:
+        tuple: Region names, standardized monthly values, monthly feature
+            headers, and original-unit monthly averages. Returns empty items
+            ([], {}, {}, {}) if a shared input is missing or invalid.
+    """
+    folder = Path(folder)
+    regions = []
+    monthly_values, monthly_headers, monthly_averages = {}, {}, {}
+    try:
+        with (folder / "metadata.json").open(encoding="utf-8") as file:
+            metadata = json.load(file)
+        if metadata["start_year"] != start_year or metadata["end_year"] != end_year:
+            raise ValueError("The saved year range does not match the requested year range.")
+
+        for month in MONTHS:
+            month_regions, values, headers = read_processed_file(folder / month / "standardized_values.csv")
+            average_regions, averages, average_headers = read_processed_file(folder / month / "climate_averages.csv")
+            if len(headers) != 4 or headers != average_headers:
+                raise ValueError(f"{month}: expected the same four feature columns in both files.")
+            for header in headers:
+                if not header.endswith("_" + month):
+                    raise ValueError(f"{month}: a feature header belongs to a different month.")
+            if len(month_regions) != metadata["n_regions"] or len(month_regions) != len(average_regions):
+                raise ValueError(f"{month}: the region counts do not match the shared dataset.")
+            if not regions:
+                regions = month_regions
+            if month_regions != regions:
+                raise ValueError(f"{month}: region names and order must match across months.")
+
+            averages_by_region = {}
+            for i in range(len(average_regions)):
+                averages_by_region[average_regions[i]] = averages[i]
+            aligned_averages = []
+            for region in regions:
+                if region not in averages_by_region:
+                    raise ValueError(f"{month}: the two files contain different regions.")
+                aligned_averages.append(averages_by_region[region])
+            monthly_values[month] = values
+            monthly_headers[month] = headers
+            monthly_averages[month] = aligned_averages
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        print(f"Error: Cannot load shared monthly data: {error}")
+        print("Run python read_data.py to prepare processed_data first.")
+        return [], {}, {}, {}
+    return regions, monthly_values, monthly_headers, monthly_averages
+
+
+if __name__ == "__main__":
+    if not prepare_monthly_data():
+        raise SystemExit(1)
