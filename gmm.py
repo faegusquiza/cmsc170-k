@@ -41,7 +41,6 @@ def gen_global_cov(data, dimensions):
                  [420,11,4],
                  [16,23,13]])
 
-    # print(B@B.T)
 
     #now that we have all this stuffs, we can go ahead and do the iterating.
     #summation is a DxD matrix
@@ -77,93 +76,14 @@ def prob_density_func( datapt , mean, covar, dimensions):
     
     return density_probability
 
-regions, monthly_values, monthly_headers, monthly_averages = read_monthly_data()
-
-def write_output(month, regions, averages, climate_values, headers, labels, centroids, details, k):
-    folder = OUTPUT_FOLDER / month # e.g. results/kmeans/monthly/month
-    folder.mkdir(parents=True, exist_ok=True) # create this month's folder if needed
-
-    # clusters
-    f = open(folder / "clusters.csv", "w", newline="", encoding="utf-8")
-    writer = csv.writer(f)
-    writer.writerow(["REGION", "CLUSTER"])
-    for i in range(len(regions)):
-        writer.writerow([regions[i], labels[i]])
-    f.close()
-
-    # climate averages
-    f = open(folder / "climate_averages.csv", "w", newline="", encoding="utf-8")
-    writer = csv.writer(f)
-    writer.writerow(["REGION"] + headers)
-    for i in range(len(regions)):
-        writer.writerow([regions[i]] + averages[i])
-    f.close()
-
-    # standardized climate values
-    f = open(folder / "standardized_values.csv", "w", newline="", encoding="utf-8")
-    writer = csv.writer(f)
-    writer.writerow(["REGION"] + headers)
-    for i in range(len(regions)):
-        writer.writerow([regions[i]] + climate_values[i])
-    f.close()
-
-    # final centroids in standardized values (what K-means used)
-    f = open(folder / "centroids.csv", "w", newline="", encoding="utf-8")
-    writer = csv.writer(f)
-    writer.writerow(["CLUSTER"] + headers)
-    for i in range(len(centroids)):
-        writer.writerow([i + 1] + centroids[i])
-    f.close()
-
-    # each cluster's average in the original units (for interpreting the climate groups)
-    f = open(folder / "cluster_averages.csv", "w", newline="", encoding="utf-8")
-    writer = csv.writer(f)
-    writer.writerow(["CLUSTER"] + headers)
-    profiles = cluster_averages(averages, labels)
-    for i in range(len(profiles)):
-        writer.writerow([i + 1] + profiles[i])
-    f.close()
-
-    # summary of clusters and their members
-    starting_regions = [regions[index] for index in details["initial_indices"]]
-    lines = [f"{month} ({START_YEAR}-{END_YEAR}): Gaussian Mixture Model Clustering"]
-    lines.append(f"k = {k}")
-    lines.append(f"Initial centroids: {', '.join(starting_regions)}")
-    lines.append(f"Iterations: {details['iterations']}")
-    for label in range(1, max(labels) + 1):
-        members = []
-        for i in range(len(regions)):
-            if labels[i] == label:
-                members.append(regions[i])
-        lines.append(f"Cluster {label}: {', '.join(members)}")
-
-    summary = "\n".join(lines)
-    print("\n" + summary)
-
-    f = open(folder / "summary.txt", "w", encoding="utf-8")
-    f.write(summary + "\n")
-    f.close()
-
-def main():
-
-
-    data = np.array(data)
-
-    print("Clustering through GMM")
-    print("Enter the number of clusters to make:")
-    distros = int(input())
-    print("Enter the error tolerance:")
-    err_tolerance = int(input())
-    print("Enter the number of dimensions:")
-    dims = int(input())
-
-    # dims = 2
-    # err_tolerance = 0.0001
-
-    #INITIALIZATIONS
+def gaussian_clusters(data, distros, dims, err_tolerance):
 
     #initialize the means such that it takes k random samples from our data
-    means = random.choices(data, k=distros) #this will be a list which has k    lists as the elements\
+    means = []
+    while len(means) < k:
+        random_index = random.choice(data)
+        if random_index not in means: # skip a region that is already a centroid
+            means.append(random_index)
     means = np.array(means)
     
     # Probability of all detaset towards the k clusters
@@ -262,15 +182,113 @@ def main():
             break
         log_like_old = log_like_new 
 
-        print(inner_log_sum)
+    return datapt_group
 
-    kmeans_output = []
-    for i in range(distros):
-        for j in datapt_group[i]:
-            kmeans_dict = {"classification": i, "coordinates":[j[1], j[0]]}
-            kmeans_output.append(kmeans_dict)
+# def write_output(month, regions, averages, climate_values, headers, labels, centroids, details, k):
+#     folder = OUTPUT_FOLDER / month # e.g. results/gaussian/monthly/{month}
+#     folder.mkdir(parents=True, exist_ok=True) # create this month's folder if needed
 
-        
+#     # clusters
+#     f = open(folder / "clusters.csv", "w", newline="", encoding="utf-8")
+#     writer = csv.writer(f)
+#     writer.writerow(["REGION", "CLUSTER"])
+#     for i in range(len(regions)):
+#         writer.writerow([regions[i], labels[i]])
+#     f.close()
+
+#     # climate averages
+#     f = open(folder / "climate_averages.csv", "w", newline="", encoding="utf-8")
+#     writer = csv.writer(f)
+#     writer.writerow(["REGION"] + headers)
+#     for i in range(len(regions)):
+#         writer.writerow([regions[i]] + averages[i])
+#     f.close()
+
+#     # standardized climate values
+#     f = open(folder / "standardized_values.csv", "w", newline="", encoding="utf-8")
+#     writer = csv.writer(f)
+#     writer.writerow(["REGION"] + headers)
+#     for i in range(len(regions)):
+#         writer.writerow([regions[i]] + climate_values[i])
+#     f.close()
+
+#     # final centroids in standardized values (what K-means used)
+#     f = open(folder / "centroids.csv", "w", newline="", encoding="utf-8")
+#     writer = csv.writer(f)
+#     writer.writerow(["CLUSTER"] + headers)
+#     for i in range(len(centroids)):
+#         writer.writerow([i + 1] + centroids[i])
+#     f.close()
+
+#     # each cluster's average in the original units (for interpreting the climate groups)
+#     f = open(folder / "cluster_averages.csv", "w", newline="", encoding="utf-8")
+#     writer = csv.writer(f)
+#     writer.writerow(["CLUSTER"] + headers)
+#     profiles = cluster_averages(averages, labels)
+#     for i in range(len(profiles)):
+#         writer.writerow([i + 1] + profiles[i])
+#     f.close()
+
+#     # summary of clusters and their members
+#     starting_regions = [regions[index] for index in details["initial_indices"]]
+#     lines = [f"{month} ({START_YEAR}-{END_YEAR}): Gaussian Mixture Model Clustering"]
+#     lines.append(f"k = {k}")
+#     lines.append(f"Initial centroids: {', '.join(starting_regions)}")
+#     lines.append(f"Iterations: {details['iterations']}")
+#     for label in range(1, max(labels) + 1):
+#         members = []
+#         for i in range(len(regions)):
+#             if labels[i] == label:
+#                 members.append(regions[i])
+#         lines.append(f"Cluster {label}: {', '.join(members)}")
+
+#     summary = "\n".join(lines)
+#     print("\n" + summary)
+
+#     f = open(folder / "summary.txt", "w", encoding="utf-8")
+#     f.write(summary + "\n")
+#     f.close()
+
+def get_k(num_regions):
+    while True:
+        try:
+            k = int(input(f"Enter the number of clusters (1-{num_regions}): "))
+        except ValueError:
+            print("Please enter a whole number.")
+            continue
+
+        if 1 <= k <= num_regions:
+            return k
+        print(f"Please enter a number from 1 to {num_regions}.")
+
+
+def main():
+
+    regions, monthly_values, monthly_headers, monthly_averages = read_monthly_data()
+
+    print("Gaussion Mixture Model Clustring for the climate of the regions in the Philippines.")
+    print(f"Regions read: {len(regions)}")
+    print(f"Monthly datasets: {len(MONTHS)}\nParameters per region per month: {len(monthly_headers['JAN'])}\nYears averaged: {START_YEAR}-{END_YEAR}\n")
+
+    distros = get_k(len(regions))
+    print("Enter the convergence error tolerance (e.g. 0.00001):")
+    err_tolerance = float(input())
+
+    for month in MONTHS:
+
+        print(monthly_averages)
+
+
+
+        # dims = 2
+        # err_tolerance = 0.0001
+
+        #INITIALIZATIONS
+        return
+
+
+
+            
 
     return
 
