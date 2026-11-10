@@ -306,10 +306,10 @@ def main():
         The terminal also displays each month's score and evaluation status.
     """
     while True:
-        method = input("Enter method (kmeans, dbscan, hierarchical): ").strip().lower()
-        if method in ["kmeans", "dbscan", "hierarchical"]:
+        method = input("Enter method (kmeans, dbscan, hierarchical, gaussian): ").strip().lower()
+        if method in ["kmeans", "dbscan", "hierarchical", "gaussian"]:
             break
-        print("Please enter kmeans, dbscan, or hierarchical.")
+        print("Please enter kmeans, dbscan, hierarchical or gaussian.")
 
     # The selected method determines the folder, so no path needs to be typed.
     monthly_folder = Path("results") / method / "monthly"
