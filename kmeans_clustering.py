@@ -21,7 +21,7 @@ import math
 import random
 from pathlib import Path
 
-from read_data import MONTHS, read_monthly_data, standardize_data
+from read_data import MONTHS, read_data
 
 import matplotlib
 matplotlib.use("Agg") # save images without opening a separate window
@@ -215,8 +215,8 @@ def draw_clusters(regions, averages, headers, labels, file, month):
     fig.savefig(file, dpi=160)
     plt.close(fig)
 
-# writes one month's assignments, original averages, standardized values, and centroids
-def write_output(month, regions, averages, climate_values, headers, labels, centroids, details, k):
+# writes one month's clustering assignments, centroids, and cluster averages
+def write_output(month, regions, averages, headers, labels, centroids, details, k):
     folder = OUTPUT_FOLDER / month # e.g. results/kmeans/monthly/month
     folder.mkdir(parents=True, exist_ok=True) # create this month's folder if needed
 
@@ -226,22 +226,6 @@ def write_output(month, regions, averages, climate_values, headers, labels, cent
     writer.writerow(["REGION", "CLUSTER"])
     for i in range(len(regions)):
         writer.writerow([regions[i], labels[i]])
-    f.close()
-
-    # climate averages
-    f = open(folder / "climate_averages.csv", "w", newline="", encoding="utf-8")
-    writer = csv.writer(f)
-    writer.writerow(["REGION"] + headers)
-    for i in range(len(regions)):
-        writer.writerow([regions[i]] + averages[i])
-    f.close()
-
-    # standardized climate values
-    f = open(folder / "standardized_values.csv", "w", newline="", encoding="utf-8")
-    writer = csv.writer(f)
-    writer.writerow(["REGION"] + headers)
-    for i in range(len(regions)):
-        writer.writerow([regions[i]] + climate_values[i])
     f.close()
 
     # final centroids in standardized values (what K-means used)
@@ -298,7 +282,7 @@ def get_k(num_regions):
 def main():
     # .\.venv\Scripts\python.exe .\kmeans_clustering.py
 
-    regions, monthly_values, monthly_headers, monthly_averages = read_monthly_data(start_year=START_YEAR, end_year=END_YEAR)
+    regions, monthly_values, monthly_headers, monthly_averages = read_data(start_year=START_YEAR, end_year=END_YEAR)
 
     if not monthly_averages:
         return # the reader already printed the error
@@ -317,7 +301,7 @@ def main():
             return # stop if clustering reported an error
 
         try:
-            write_output(month, regions, averages, climate_values, headers, labels, centroids, details, k)
+            write_output(month, regions, averages, headers, labels, centroids, details, k)
         except OSError:
             print(f"Error: Cannot save {month}'s results. Check whether the output folder is writable or a file is open.")
             return

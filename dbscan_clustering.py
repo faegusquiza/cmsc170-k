@@ -35,7 +35,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import csv
 
-from read_data import MONTHS, read_monthly_data, standardize_data
+from read_data import MONTHS, read_data
 
 
 # Directory where monthly DBSCAN results are stored.
@@ -103,13 +103,13 @@ def main():
     through color. Cluster assignments are also exported to CSV files.
     """
 
-    regions, monthly_values, monthly_parameters, monthly_averages = read_monthly_data()
+    regions, monthly_values, monthly_parameters, monthly_averages = read_data()
 
     for month in MONTHS:
         print(f"Clustering {month}")
 
         # Represent each region as a point in the monthly feature space.
-        points = [Point(regions[i], monthly_averages[month][i]) for i in range(len(regions))]
+        points = [Point(regions[i], monthly_values[month][i]) for i in range(len(regions))]
 
         # Estimate epsilon using the sorted k-distance distribution.
         epsilon = calculate_epsilon([point.coordinates for point in points])
