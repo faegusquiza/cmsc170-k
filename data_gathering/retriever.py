@@ -26,6 +26,7 @@ Note:
 
 import io
 import csv
+import math
 import requests
 from pathlib import Path
 
@@ -74,10 +75,10 @@ def main():
 
     # Load and group grid-point coordinates by Philippine region
     syn1_coordinates = get_grid_coordinates_per_region(
-        GRID_COORDINATE_FOLDER / 'syn1_philippine_grid_coordinates.csv'
+        GRID_COORDINATE_FOLDER / 'syn1_coordinates_weighted.csv'
     )
     merra2_coordinates = get_grid_coordinates_per_region(
-        GRID_COORDINATE_FOLDER / 'merra2_philippine_grid_coordinates.csv'
+        GRID_COORDINATE_FOLDER / 'merra2_coordinates_weighted.csv'
     )
 
     # Create the output directory if it does not already exist.
@@ -130,12 +131,12 @@ def fetch_regional_parameter_average(grid_coordinates, parameters) -> dict[tuple
 
     Sends an API request for each grid point, retrieves the requested
     climate parameters, and accumulates their monthly values. The
-    accumulated values are divided by the number of grid points to
-    obtain the arithmetic regional average.
+    accumulated values are divided by the sum of their weights to
+    obtain the weighted regional average.
 
     Args:
-        grid_coordinates: List of (latitude, longitude) tuples representing
-            the grid points belonging to a region.
+        grid_coordinates: List of (latitude, longitude, weight) tuples
+            representing the grid points belonging to a region.
         parameters: List of NASA POWER climate parameter codes to retrieve.
 
     Returns:
@@ -149,13 +150,20 @@ def fetch_regional_parameter_average(grid_coordinates, parameters) -> dict[tuple
             placeholder in any of the expected time columns.
     """
 
-    # Initialize an empty DataFrame to accumulate grid-point climate data
+    # Initialize a dictionary to accumulate weighted grid-point climate data.
     regional_average_df = {}
 
     # Count the total number of grid points to process.
     grid_point_count = len(grid_coordinates)
+    total_weight = 0.0
+    if grid_point_count == 0:
+        raise ValueError('Region have no grid points.')    
 
-    for grid_index, (latitude, longitude) in enumerate(grid_coordinates):
+    for grid_index, (latitude, longitude, weight) in enumerate(grid_coordinates):
+        if not math.isfinite(weight) or weight < 0:
+            raise ValueError(f'Invalid weight {weight} at ({latitude}, {longitude})')
+
+        total_weight += weight
 
         # Construct the API request using the current grid point
         # and the requested climate parameters.
@@ -198,25 +206,33 @@ def fetch_regional_parameter_average(grid_coordinates, parameters) -> dict[tuple
                 
         print(f'\tGrid {str(grid_index + 1).zfill(2)}/{grid_point_count}: Data retrieved at ({latitude}, {longitude})')
 
-        # Use the first grid point's DataFrame as the initial accumulator.
+        # Preserve parameter/year labels and initialize weighted time values.
         if len(regional_average_df) == 0:
             regional_average_df = response_dict.copy()
+            for time_cols in TIME_COLUMNS:
+                regional_average_df[time_cols] = [
+                    value * weight for value in response_dict[time_cols]
+                ]
 
-        # Add subsequent grid-point values to the accumulated monthly values.
+        # Add this grid point's weighted values to the accumulated values.
         else:
             for time_cols in TIME_COLUMNS:
                 for i in range(len(response_dict[time_cols])):
-                    regional_average_df[time_cols][i] += response_dict[time_cols][i]
+                    regional_average_df[time_cols][i] += response_dict[time_cols][i] * weight
 
-    # Divide the accumulated values by the total number of grid points
-    # to obtain the arithmetic average for each time column.
+    if not math.isfinite(total_weight) or total_weight <= 0:
+        raise ValueError('The sum of grid-point weights must be positive and finite.')
+
+    #Normalize weights for floating point errors
     for time_cols in TIME_COLUMNS:
-        regional_average_df[time_cols] = [x/grid_point_count for x in regional_average_df[time_cols]]
+        regional_average_df[time_cols] = [
+            value / total_weight for value in regional_average_df[time_cols]
+        ]
 
     return regional_average_df
 
 
-def get_grid_coordinates_per_region(filepath_or_buffer) -> dict[str, list[tuple[float, float]]]:
+def get_grid_coordinates_per_region(filepath_or_buffer) -> dict[str, list[tuple[float, float, float]]]:
     """
     Reads grid coordinates from a CSV file and groups them by region.
 
@@ -255,10 +271,11 @@ def get_grid_coordinates_per_region(filepath_or_buffer) -> dict[str, list[tuple[
             region = row['region'].strip()
             latitude = float(row['latitude'])
             longitude = float(row['longitude'])
+            weight = float(row['weight'])
 
             # Only include coordinates for recognized regions.
             if region in grid_coordinates_per_region:
-                grid_coordinates_per_region[region].append((latitude, longitude))
+                grid_coordinates_per_region[region].append((latitude, longitude, weight))
 
 
     return grid_coordinates_per_region
