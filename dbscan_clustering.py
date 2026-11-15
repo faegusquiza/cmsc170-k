@@ -1,4 +1,3 @@
-
 """
 DBSCAN Clustering Implementation
 
@@ -25,6 +24,9 @@ Configuration:
 
     OUTPUT_FOLDER (Path): Directory where the clustering results,
         visualizations, and CSV files are saved.
+
+    TARGET_MONTH (str | None): Month to process. Set to a month code such
+        as "JAN" to run one month, or None to run every month.
 
 Note:
     AI was used for proper code documentation and code insights.
@@ -89,42 +91,53 @@ class Point:
         return f"coordinates: {coordinates}, is_core: {self.is_core}, cluster: {self.cluster}"
 
 
-def main():
+def main(target_month=TARGET_MONTH):
     """
-    Execute DBSCAN clustering for every month in the dataset.
+    Execute DBSCAN for one selected month or for every month.
 
-    Monthly climate data is loaded and converted into Point objects.
-    Each month is clustered independently using the same MinPts
-    configuration and an epsilon value calculated from its k-distance
-    distribution.
+    Args:
+        target_month (str | None): Month to process. If None, all months
+            in the dataset are processed.
 
-    After clustering, the results are visualized using two-dimensional
-    and three-dimensional plots, with the fourth parameter represented
-    through color. Cluster assignments are also exported to CSV files.
+    For each selected month, the function exports the final clusters,
+    intermediate parameter-selection data, diagnostic plots, and point
+    classification details to that month's output directory.
     """
 
     regions, monthly_values, monthly_parameters, monthly_averages = read_monthly_data()
 
+    if target_month is not None and target_month not in MONTHS:
+        raise ValueError(
+            f"Invalid month '{target_month}'. Choose one of: {', '.join(MONTHS)}"
+        )
+
     for month in MONTHS:
         print(f"Clustering {month}")
 
+        output_directory = OUTPUT_FOLDER / month
+        output_directory.mkdir(parents=True, exist_ok=True)
+
         # Represent each region as a point in the monthly feature space.
-        points = [Point(regions[i], monthly_averages[month][i]) for i in range(len(regions))]
+        points = [
+            Point(regions[i], monthly_averages[month][i])
+            for i in range(len(regions))
+        ]
 
-        # Estimate epsilon using the sorted k-distance distribution.
-        epsilon = calculate_epsilon([point.coordinates for point in points])
+        # Estimate epsilon and export the k-distance and knee diagnostics.
+        epsilon = calculate_epsilon(
+            [point.coordinates for point in points],
+            regions=[point.region for point in points],
+            output_directory=output_directory,
+            month=month,
+        )
+        print(f"Estimated epsilon for {month}: {epsilon:.6f}")
 
-        # Start at -1 because cluster identifiers are initially
-        # unassigned. The first discovered cluster will have ID 0.
+        # Start at -1 because cluster identifiers are initially unassigned.
         clusters_count = -1
 
-        # Identify neighboring points using the calculated epsilon.
         identify_neighbors(points, epsilon)
-
-        # Determine which points satisfy the MinPts requirement.
         core_points = identify_core_points(points, MINPTS)
 
-        # Expand a cluster from every unassigned core point.
         for point in core_points:
             if point.cluster != -1:
                 continue
@@ -132,10 +145,11 @@ def main():
             clusters_count += 1
             cluster(point, clusters_count)
 
-        # Generate visualizations and export the cluster assignments.
+        # Generate final cluster visualizations and export all diagnostics.
         graph_clusters(points, month, monthly_parameters[month])
         graph_clusters_4d(points, month, monthly_parameters[month])
         save_clusters(points, month)
+        save_point_diagnostics(points, month, epsilon)
 
 
 def save_clusters(points: list[Point], month):
@@ -451,36 +465,131 @@ def identify_core_points(points: list[Point], minpts: int) -> list[Point]:
     return core_points
 
 
-def calculate_epsilon(points_coordinates):
+def calculate_epsilon(
+    points_coordinates,
+    regions=None,
+    output_directory=None,
+    month=None,
+):
     """
-    Estimate the epsilon parameter using the sorted k-distance curve.
+    Estimate epsilon from the sorted k-distance curve.
 
-    The k-distance of each point is calculated using MinPts - 1
-    neighboring points because the point itself is excluded from
-    the distance calculations.
-
-    The resulting k-distances are sorted and passed to the knee
-    detection heuristic. The distance at the detected knee index
-    is selected as epsilon.
+    The k-distance for each point is paired with its region before sorting,
+    allowing the intermediate values to be exported without losing the
+    identity of the original data point.
 
     Args:
-        points_coordinates (list[list[float]]): Coordinates of all
-            data points.
+        points_coordinates (list[list[float]]): Coordinates of all points.
+        regions (list[str] | None): Region names in the same order as the
+            coordinates. Used when exporting the diagnostic CSV.
+        output_directory (Path | None): Destination for diagnostic files.
+        month (str | None): Month label used in diagnostic plot titles.
 
     Returns:
         float: Estimated epsilon value.
     """
 
-    # Calculate the distance to the (MinPts - 1)-th nearest neighbor.
-    k_distance = get_k_distance(points_coordinates, MINPTS - 1)
+    k = MINPTS - 1
+    if k < 1 or k >= len(points_coordinates):
+        raise ValueError("There are not enough points to calculate k-distance.")
 
-    x = range(len(k_distance))
-    knee = kneedle(x, k_distance)
+    # Preserve each point's identity while calculating its k-distance.
+    point_k_distances = []
+    for point_index, point_a in enumerate(points_coordinates):
+        distances = [
+            get_euclidian_distance(point_a, point_b)
+            for other_index, point_b in enumerate(points_coordinates)
+            if other_index != point_index
+        ]
+        distances.sort()
+        point_k_distances.append((point_index, distances[k - 1]))
 
-    # Select the k-distance at the detected knee position.
+    # Sort the paired values to construct the k-distance curve.
+    sorted_pairs = sorted(point_k_distances, key=lambda item: item[1])
+    k_distance = [distance for _, distance in sorted_pairs]
+    knee = kneedle(list(range(len(k_distance))), k_distance)
     epsilon = k_distance[knee]
 
+    # Export the sorted curve, including the region at each position.
+    if output_directory is not None:
+        output_directory.mkdir(parents=True, exist_ok=True)
+        region_names = regions if regions is not None else [
+            f"Point {i + 1}" for i in range(len(points_coordinates))
+        ]
+        x_values = list(range(len(k_distance)))
+        x_normalized = normalize(x_values)
+        y_normalized = normalize(k_distance)
+        deviations = [x_normalized[i] - y_normalized[i] for i in range(len(k_distance))]
+
+        with open(output_directory / "k_distance.csv", "w", newline="", encoding="utf-8") as file:
+            writer = csv.writer(file)
+            writer.writerow(["SORTED_POSITION", "REGION", "K_DISTANCE", "NORMALIZED_X", "NORMALIZED_K_DISTANCE", "DEVIATION", "IS_SELECTED_KNEE"])
+            for position, (original_index, distance) in enumerate(sorted_pairs):
+                writer.writerow([
+                    position,
+                    region_names[original_index],
+                    distance,
+                    x_normalized[position],
+                    y_normalized[position],
+                    deviations[position],
+                    position == knee,
+                ])
+
+        graph_k_distance(
+            k_distance,
+            knee_index=knee,
+            epsilon=epsilon,
+            month=month,
+            output_path=output_directory / "k_distance.png",
+        )
+        graph_knee_deviation(
+            x_normalized,
+            y_normalized,
+            deviations,
+            knee,
+            month,
+            output_directory / "knee_deviation.png",
+        )
+
     return epsilon
+
+
+def graph_knee_deviation(x_normalized, y_normalized, deviations, knee, month, output_path):
+    """Save the normalized k-distance curve and maximum-deviation selection."""
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.plot(x_normalized, y_normalized, label="Normalized k-distance")
+    ax.plot(x_normalized, x_normalized, linestyle="--", label="Diagonal reference")
+    ax.scatter(
+        [x_normalized[knee]],
+        [y_normalized[knee]],
+        color="red",
+        zorder=3,
+        label=f"Selected knee (index {knee})",
+    )
+    ax.set_title(f"Normalized K-distance and Selected Knee - {month or ''}")
+    ax.set_xlabel("Normalized sorted position")
+    ax.set_ylabel("Normalized k-distance")
+    ax.grid(alpha=0.3)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved: {output_path}")
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.plot(range(len(deviations)), deviations, marker=".")
+    ax.scatter([knee], [deviations[knee]], color="red", zorder=3, label="Selected maximum deviation")
+    ax.set_title(f"Maximum-Deviation Values - {month or ''}")
+    ax.set_xlabel("Sorted position")
+    ax.set_ylabel("Normalized x - normalized k-distance")
+    ax.grid(alpha=0.3)
+    ax.legend()
+    fig.tight_layout()
+    deviation_path = output_path.with_name("maximum_deviation.png")
+    fig.savefig(deviation_path, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved: {deviation_path}")
 
 
 def kneedle(x: list[float], y: list[float]):
@@ -672,25 +781,123 @@ def graph_regression(title, x, y, data_points):
     plt.show()
 
 
-def graph_k_distance(k_distance):
-    """
-    Plot the sorted k-distance values used for epsilon estimation.
+def graph_k_distance(k_distance, knee_index=None, epsilon=None, month=None, output_path=None):
+    """Plot the sorted k-distance curve and optionally mark the selected knee."""
 
-    The x-axis represents the position of each point in the sorted
-    k-distance sequence, while the y-axis represents its distance
-    to its k-th nearest neighbor.
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.plot(range(len(k_distance)), k_distance, linestyle="-", label="Sorted k-distance")
 
-    Args:
-        k_distance (list[float]): Sorted k-distance values.
-    """
+    if knee_index is not None:
+        ax.scatter(
+            [knee_index],
+            [k_distance[knee_index]],
+            color="red",
+            zorder=3,
+            label=f"Selected knee (epsilon = {epsilon:.4f})",
+        )
+        ax.axhline(epsilon, color="red", linestyle="--", alpha=0.6)
 
-    plt.plot(range(len(k_distance)), k_distance, linestyle="-")
+    ax.set_title(f"K-distance Curve - {month or ''}")
+    ax.set_xlabel("Sorted point position")
+    ax.set_ylabel("Distance to the 4th nearest neighbor")
+    ax.grid(alpha=0.3)
+    ax.legend()
+    fig.tight_layout()
 
-    plt.title("K-distance")
-    plt.xlabel("No. of Paired Points")
-    plt.ylabel("Distance")
+    if output_path is not None:
+        fig.savefig(output_path, dpi=300, bbox_inches="tight")
+        print(f"Saved: {output_path}")
+    else:
+        plt.show()
 
-    plt.show()
+    plt.close(fig)
+
+
+def save_point_diagnostics(points: list[Point], month, epsilon):
+    """Export point-level DBSCAN details, neighbor relationships, and summaries."""
+
+    output_directory = OUTPUT_FOLDER / month
+    output_directory.mkdir(parents=True, exist_ok=True)
+
+    # Detailed record for each region.
+    with open(output_directory / "point_details.csv", "w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        writer.writerow([
+            "REGION", "COORDINATES", "NEIGHBOR_COUNT_EXCLUDING_SELF",
+            "TOTAL_EPSILON_NEIGHBORHOOD", "IS_CORE", "POINT_TYPE",
+            "CLUSTER", "EPSILON",
+        ])
+        for point in points:
+            if point.is_core:
+                point_type = "Core"
+            elif point.cluster != -1:
+                point_type = "Border"
+            else:
+                point_type = "Noise"
+
+            cluster_id = point.cluster + 1 if point.cluster != -1 else -1
+            writer.writerow([
+                point.region,
+                point.coordinates,
+                len(point.neighbors),
+                len(point.neighbors) + 1,
+                point.is_core,
+                point_type,
+                cluster_id,
+                epsilon,
+            ])
+
+    # One row for each directed neighbor relationship.
+    with open(output_directory / "neighbor_relationships.csv", "w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        writer.writerow(["REGION", "NEIGHBOR_REGION", "EUCLIDEAN_DISTANCE"])
+        for point in points:
+            for neighbor in point.neighbors:
+                writer.writerow([
+                    point.region,
+                    neighbor.region,
+                    get_euclidian_distance(point.coordinates, neighbor.coordinates),
+                ])
+
+    # Summarize cluster sizes and point classifications.
+    cluster_counts = {}
+    for point in points:
+        cluster_label = point.cluster + 1 if point.cluster != -1 else -1
+        cluster_counts[cluster_label] = cluster_counts.get(cluster_label, 0) + 1
+
+    core_count = sum(point.is_core for point in points)
+    border_count = sum(point.cluster != -1 and not point.is_core for point in points)
+    noise_count = sum(point.cluster == -1 for point in points)
+
+    with open(output_directory / "cluster_summary.csv", "w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        writer.writerow(["ITEM", "COUNT"])
+        writer.writerow(["TOTAL_POINTS", len(points)])
+        writer.writerow(["NUMBER_OF_CLUSTERS", len([key for key in cluster_counts if key != -1])])
+        writer.writerow(["CORE_POINTS", core_count])
+        writer.writerow(["BORDER_POINTS", border_count])
+        writer.writerow(["NOISE_POINTS", noise_count])
+        for cluster_id, count in sorted(cluster_counts.items()):
+            label = "NOISE" if cluster_id == -1 else f"CLUSTER_{cluster_id}"
+            writer.writerow([label, count])
+
+    # A compact diagram showing the final point-type counts.
+    fig, ax = plt.subplots(figsize=(8, 5))
+    labels = ["Core", "Border", "Noise"]
+    counts = [core_count, border_count, noise_count]
+    bars = ax.bar(labels, counts)
+    ax.set_title(f"DBSCAN Point Classification - {month}")
+    ax.set_ylabel("Number of regions")
+    ax.grid(axis="y", alpha=0.3)
+    for bar, count in zip(bars, counts):
+        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height(), str(count), ha="center", va="bottom")
+    fig.tight_layout()
+    classification_path = output_directory / "point_classification.png"
+    fig.savefig(classification_path, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved: {classification_path}")
+
+    print(f"Saved point diagnostics in: {output_directory}")
 
 
 def get_distance_matrix(data_points):
