@@ -37,7 +37,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import csv
 
-from read_data import MONTHS, read_monthly_data, standardize_data
+from read_data import MONTHS, read_data
 
 
 # Directory where monthly DBSCAN results are stored.
@@ -104,7 +104,7 @@ def main(target_month=TARGET_MONTH):
     classification details to that month's output directory.
     """
 
-    regions, monthly_values, monthly_parameters, monthly_averages = read_monthly_data()
+    regions, monthly_values, monthly_parameters, monthly_averages = read_data()
 
     if target_month is not None and target_month not in MONTHS:
         raise ValueError(
@@ -118,10 +118,7 @@ def main(target_month=TARGET_MONTH):
         output_directory.mkdir(parents=True, exist_ok=True)
 
         # Represent each region as a point in the monthly feature space.
-        points = [
-            Point(regions[i], monthly_averages[month][i])
-            for i in range(len(regions))
-        ]
+        points = [Point(regions[i], monthly_values[month][i]) for i in range(len(regions))]
 
         # Estimate epsilon and export the k-distance and knee diagnostics.
         epsilon = calculate_epsilon(
