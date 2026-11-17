@@ -1,4 +1,4 @@
-# 2001 - 2026 Philippine Monthly Climate Zone Clustering
+# Philippine Monthly Climate Zone Clustering: An Analysis on Clustering Methods
 
 **CMSC 170 Project**
 
@@ -89,7 +89,7 @@ The script retrieves the climate data and exports the resulting regional CSV fil
 
 Data needs to pre-processed before running any of the clustering methods.
 
-Run the data reader script:
+Run the data reader and preprocessing script:
 
 ```powershell
 python -m utilities.data_reader
@@ -292,15 +292,17 @@ Each coordinate CSV contains the following columns:
 | `region` | Philippine region assigned to the grid point |
 | `latitude` | Latitude coordinate |
 | `longitude` | Longitude coordinate |
+| `weight` | Area-based weight assigned to the grid point |
+| `area` | Land area represented by the grid point |
 
 Example:
 
 ```csv
-region,latitude,longitude
-REGION 1,18.5,120.5
-REGION 1,18.5,121.25
-REGION 2,21.0,122.0
-REGION 2,20.5,122.0
+region,latitude,longitude,weight,area
+REGION 1,18.5,120.5,0.25,123.4
+REGION 1,18.5,121.25,0.75,370.2
+REGION 2,21.0,122.0,0.60,245.1
+REGION 2,20.5,122.0,0.40,163.4
 ```
 
 Each row represents one geographic grid point. A region may contain multiple grid points depending on the coverage of the corresponding grid layer.
@@ -335,7 +337,7 @@ The script checks whether each request was successful and verifies that the expe
 
 **4. Calculate regional averages**
 
-The monthly climate values from all grid points belonging to a region are accumulated and divided by the total number of grid points.
+The monthly climate values are multiplied by their grid-point weights, accumulated for each region, and divided by the total weight.
 
 **5. Identify grid layers**
 
@@ -351,22 +353,20 @@ The combined regional datasets are saved as CSV files inside the `regions/` dire
 
 ### Regional Averaging
 
-The current implementation calculates the arithmetic mean of the climate values across all grid points within a region.
+The current implementation calculates an area-weighted average of the climate values across all grid points within a region.
 
 $$
 \bar{x}_{r,t} =
-\frac{1}{n_r}\sum_{i=1}^{n_r}x_{i,t}
+\frac{\sum_{i=1}^{n_r}w_{r,i}x_{i,t}}
+{\sum_{i=1}^{n_r}w_{r,i}}
 $$
 
 Where:
 
 - $\bar{x}_{r,t}$: Average climate value for region $r$ at time $t$.
 - $n_r$: Number of grid points belonging to region $r$.
+- $w_{r,i}$: Area-based weight for grid point $i$ in region $r$.
 - $x_{i,t}$: Climate value at grid point $i$ for time $t$.
-
-Each grid point receives equal weight in the calculation.
-
-This is an unweighted arithmetic average and should not be interpreted as an area-weighted regional climate estimate.
 
 ### Output Data
 
