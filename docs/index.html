@@ -337,7 +337,7 @@
           </p>
           <figure>
             <img src="./static/images/1.png" alt="The regions of the Philippines overlaid with a portion of the MERRA-2 grid in QGIS">
-            <figcaption>The regions of the Philippines and a portion of the MERRA-2 grid imported into QGIS to weight each grid cell with respect to its region.</figcaption>
+            <figcaption>Figure 1. The regions of the Philippines and a portion of the MERRA-2 grid imported into QGIS to weight each grid cell with respect to its region.</figcaption>
           </figure>
 
           <h4 class="title is-4">Data Processing</h4>
@@ -1128,18 +1128,18 @@
           DBSCAN is not included in the comparable metric table because its Silhouette Score and DBI were undefined in every month: each result contained only one non-noise cluster. Its epsilon values, noise proportions, and undefined-score status are reported in the DBSCAN table in Section 1. The noise proportions ranged from 0.000000 to 0.166667 and should be interpreted as coverage information rather than as evidence of superior clustering quality.
           </p>
 
-          <p>Figures 5–7 show January through March examples of the k-distance graphs used with the maximum-deviation knee-selection heuristic.</p>
+          <p>Figures 2–4 show January through March examples of the k-distance graphs used with the maximum-deviation knee-selection heuristic.</p>
           <figure>
           <img src="./static/images/results/dbscan/JAN_k_distance.png" alt="January DBSCAN k-distance graph">
-          <figcaption>Figure 5. January DBSCAN k-distance graph used with the maximum-deviation knee-selection heuristic.</figcaption>
+          <figcaption>Figure 2. January DBSCAN k-distance graph used with the maximum-deviation knee-selection heuristic.</figcaption>
           </figure>
           <figure>
           <img src="./static/images/results/dbscan/FEB_k_distance.png" alt="February DBSCAN k-distance graph">
-          <figcaption>Figure 6. February DBSCAN k-distance graph used with the maximum-deviation knee-selection heuristic.</figcaption>
+          <figcaption>Figure 3. February DBSCAN k-distance graph used with the maximum-deviation knee-selection heuristic.</figcaption>
           </figure>
           <figure>
           <img src="./static/images/results/dbscan/MAR_k_distance.png" alt="March DBSCAN k-distance graph">
-          <figcaption>Figure 7. March DBSCAN k-distance graph used with the maximum-deviation knee-selection heuristic.</figcaption>
+          <figcaption>Figure 4. March DBSCAN k-distance graph used with the maximum-deviation knee-selection heuristic.</figcaption>
           </figure>
           <p>
           These graphs are relevant because the selected knee is used to set DBSCAN's monthly epsilon, the maximum neighborhood distance for treating regions as neighbors. The maximum-deviation knee-selection heuristic therefore connects the distance structure of each month's standardized climate profiles to the resulting density-based assignments. Changes in the knee position can alter which regions qualify as core or border points and which are labeled as noise; this helps explain why the monthly noise proportions vary. In this analysis, the selected epsilons still produced one non-noise cluster in every month, so the graphs support the parameter-selection procedure but do not provide evidence that DBSCAN produced a multi-cluster regionalization.
@@ -1153,25 +1153,25 @@
           <p>
           The following figures show January outputs for the final configurations selected using the twelve-month mean combined ranks. They are presented separately from the January candidate-metric tables because the displayed assignments correspond to the final mean-based configurations.
           </p>
-          <p>Figure 1 shows the January K-means output for the selected \(k=7\) configuration.</p>
+          <p>Figure 5 shows the January K-means output for the selected \(k=7\) configuration.</p>
           <figure>
           <img src="./static/images/results/kmeans/JAN_clusters.png" alt="January K-means cluster scatter views">
-          <figcaption>Figure 1. Representative January K-means output for the selected \(k=7\) configuration.</figcaption>
+          <figcaption>Figure 5. Representative January K-means output for the selected \(k=7\) configuration.</figcaption>
           </figure>
-          <p>Figure 2 shows the January hierarchical clustering output for the selected \(k=5\) configuration.</p>
+          <p>Figure 6 shows the January hierarchical clustering output for the selected \(k=5\) configuration.</p>
           <figure>
           <img src="./static/images/results/hierarchical/JAN_clusters.png" alt="January hierarchical clustering scatter views">
-          <figcaption>Figure 2. Representative January hierarchical clustering output for the selected \(k=5\) configuration.</figcaption>
+          <figcaption>Figure 6. Representative January hierarchical clustering output for the selected \(k=5\) configuration.</figcaption>
           </figure>
-          <p>Figure 3 shows the January Gaussian Mixture Model output for the selected 14-component configuration.</p>
+          <p>Figure 7 shows the January Gaussian Mixture Model output for the selected 14-component configuration.</p>
           <figure>
           <img src="./static/images/results/gmm/JAN_clusters.png" alt="January Gaussian mixture model cluster plot">
-          <figcaption>Figure 3. Representative January Gaussian Mixture Model output for the selected 14-component configuration.</figcaption>
+          <figcaption>Figure 7. Representative January Gaussian Mixture Model output for the selected 14-component configuration.</figcaption>
           </figure>
-          <p>Figure 4 shows the January DBSCAN output using the selected epsilon and MinPts configuration.</p>
+          <p>Figure 8 shows the January DBSCAN output using the selected epsilon and MinPts configuration.</p>
           <figure>
           <img src="./static/images/results/dbscan/JAN_clusters_4d.png" alt="January DBSCAN four-dimensional cluster plot">
-          <figcaption>Figure 4. Representative January DBSCAN output using the selected epsilon and MinPts configuration.</figcaption>
+          <figcaption>Figure 8. Representative January DBSCAN output using the selected epsilon and MinPts configuration.</figcaption>
           </figure>
           <h3 class="title is-4">Climatological Interpretation</h3>
 
