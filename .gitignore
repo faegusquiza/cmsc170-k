@@ -1,7 +1,7 @@
 __pycache__/*
 *.py[cod]
-.venv/
-venv/
+.venv/*
+venv/*
 methods/__pycache__/*
 metrics/__pycache__/*
 tests/__pycache__/*

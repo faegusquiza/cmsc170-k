@@ -42,7 +42,7 @@ cmsc170-k/
 
 ### Clone the Repository
 
-```bash
+```powershell
 git clone https://github.com/faegusquiza/cmsc170-k.git
 cd cmsc170-k
 ```
@@ -51,21 +51,21 @@ cd cmsc170-k
 
 **Windows:**
 
-```bash
+```powershell
 python -m venv venv
 venv\Scripts\activate
 ```
 
 **Linux/macOS:**
 
-```bash
+```powershell
 python3 -m venv venv
 source venv/bin/activate
 ```
 
 ### Install Dependencies
 
-```bash
+```powershell
 pip install -r requirements.txt
 ```
 
@@ -77,7 +77,7 @@ Ensure that the required coordinate CSV files are placed inside the `gathered_da
 
 Run the data retriever script:
 
-```bash
+```powershell
 python -m utilities.data_retriever
 ```
 
@@ -91,7 +91,7 @@ Data needs to pre-processed before running any of the clustering methods.
 
 Run the data reader script:
 
-```bash
+```powershell
 python -m utilities.data_reader
 ```
 
@@ -105,7 +105,7 @@ Once all data has been processed, each methods script must be run.
 
 Run the method scripts:
 
-```bash
+```powershell
 python -m methods.kmeans_clustering
 python -m methods.hierarchical_clustering
 python -m methods.gmm
@@ -122,7 +122,7 @@ After running all of the method completely, evaluating may begin.
 
 Run the metric scripts:
 
-```bash
+```powershell
 python -m metrics.davies_bouldin_index
 python -m metrics.silhouette_score
 ```
@@ -576,7 +576,7 @@ cmsc170-k/
 
 ### Clone the Repository
 
-```bash
+```powershell
 git clone https://github.com/faegusquiza/cmsc170-k.git
 cd cmsc170-k
 ```
@@ -585,21 +585,21 @@ cd cmsc170-k
 
 **Windows:**
 
-```bash
+```powershell
 python -m venv venv
 venv\Scripts\activate
 ```
 
 **Linux/macOS:**
 
-```bash
+```powershell
 python3 -m venv venv
 source venv/bin/activate
 ```
 
 ### Install Dependencies
 
-```bash
+```powershell
 pip install -r requirements.txt
 ```
 
@@ -611,7 +611,7 @@ Ensure that the required coordinate CSV files are placed inside the `grid_coordi
 
 Run the data-gathering script:
 
-```bash
+```powershell
 cd gathered_data
 python gathered_data.py
 ```
