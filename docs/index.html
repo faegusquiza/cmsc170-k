@@ -40,15 +40,16 @@
   <script src="./static/js/index.js"></script>
   
   <!-- Latex Math Equation Module -->
-  <script>
-    window.MathJax = {
-      tex: {
-        inlineMath: [['\\(', '\\)']],
-        displayMath: [['\\[', '\\]']]
-      }
-    };
-  </script>
-  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['\\[', '\\]']],
+      tags: 'ams' // Keeps amsmath-style equation numbering enabled
+    }
+  };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
   
@@ -337,118 +338,96 @@
           <h4 class="title is-4">Overview</h4>
           <div class="content has-text-centered">
             <p class="mermaid">
-              flowchart TD
-                A([Start]) --> B[/Gather Data/]
-                B --> C[Process Data]
-                C --> D[Run Clustering Methods]
+flowchart TD
+    A([Start]) --> B[/Gather Data/]
+    B --> C[Process Data]
+    C --> D[Run Clustering Methods]
 
-                D --> E[K-means]
-                D --> F[Hierarchical Clustering]
-                D --> G[Gaussian Mixture Model]
-                D --> H[DBSCAN]
+    D --> E[K-means]
+    D --> F[Hierarchical Clustering]
+    D --> G[Gaussian Mixture Model]
+    D --> H[DBSCAN]
 
-                    E --> I[Test different k values]
-                    F --> J[Test different dendrogram cuts]
-                    G --> K[Test different numbers of components]
+    E --> I[Test different k values]
+    F --> J[Test different dendrogram cuts]
+    G --> K[Test different numbers of components]
 
-                    I --> M[Evaluate using Silhouette Score and DBI]
-                    J --> M
-                    K --> M
+    I --> M[Rank configurations by Silhouette Score and DBI, then sum the ranks]
+    J --> M
+    K --> M
 
-                    H --> L[Tune eps and min_samples]
-                    L --> N[Apply Maximum-Deviation Knee-Selection Heuristic]
+    H --> L[Tune eps and min_samples]
+    L --> N[Apply Maximum-Deviation Knee-Selection Heuristic]
 
-                M --> O[Select promising configurations]
-                N --> O
-                O --> P[/Export selected results/]
-                P --> Q[Evaluate selected clustering methods]
-                Q --> R[Calculate Silhouette Score and DBI]
-                R --> S[Compare and Analyze Results]
-                S --> U([End])
+    M --> O[Select promising configurations]
+    N --> O
+    O --> P[/Export selected results/]
+    P --> Q[Evaluate selected clustering methods]
+    Q --> R[Calculate Silhouette Score and DBI]
+    R --> S[Compare and Analyze Results]
+    S --> U([End])
             </p>
           </div>
+
           <h4 class="title is-4">Data Gathering</h4>
           <p>
-            The Philippine Archipelago is to be divided into the 18 administrative regions, which would then be clustered based on the similarities of their climate. These climates are measured into four parameters, the All Sky Surface Shortwave Downward Irradiance, the Temperature at 2 Meters, the Precipitation Average, and the Wind Speed at 10 Meters. These Philippine regions includes the Negros Island Region, which is a recently added region in the archipelago [1].
+            The Philippine Archipelago is divided into its 18 administrative regions, which are then clustered based on the similarities of their climate. Climate is measured through four parameters: All Sky Surface Shortwave Downward Irradiance, Temperature at 2 Meters, Precipitation Average, and Wind Speed at 10 Meters. The 18 regions include the Negros Island Region, which was recently added to the archipelago [1].
           </p>
           <p>
-            The data was collected from NASA POWER LARC through the restful APIs that they have provided. The quality of the data that can be collected is heavily limited by the resolution of the two grids that the four chosen parameters lie on. The first grid is the MERRA-2 Grid, this grid is to be used for the three out of the four parameters that this paper has chosen, which focuses on meteorological data sets; their code names are T2M, PRECTOTCORR, and WS10M. This grid has a resolution of ½° latitude and ⅝° longitude [2]. The second grid is the SYN1deg. This is to be used for the radiation data sets, and in this case, the parameter for the data's code name is ALLSKY_SFC_SW_DWN, which is the only irradiance data in this paper. This grid has a resolution of 1° latitude and 1° longitude [2]. 
+            The data was collected from NASA POWER LaRC through the RESTful APIs that it provides. The quality of the collected data is limited by the resolution of the two grids on which the four chosen parameters lie. The first is the MERRA-2 grid, used for three of the four parameters, which are meteorological data sets with the code names T2M, PRECTOTCORR, and WS10M. This grid has a resolution of ½° latitude and ⅝° longitude [2]. The second is the SYN1deg grid, used for the radiation data set; in this paper, the only irradiance parameter is ALLSKY_SFC_SW_DWN. This grid has a resolution of 1° latitude and 1° longitude [2].
           </p>
           <p>
-            The set of grids to be collected for a certain region are those grids that contain a piece of land belonging to that region. However, due to the resolution of these grids and the maritime nature of the Philippines, the API may return grids containing substantial water areas, which could introduce inconsistencies in the data [3]. To resolve this, area-weighted spatial aggregation is applied [4]. The climate data from each selected grid cell is multiplied by its land-area weight and accumulated, then divided by the total weight for that region. This normalization also handles small floating-point differences from a total weight of exactly one.
+            The set of grid cells collected for a region consists of the cells that contain a piece of land belonging to that region. However, because of the resolution of these grids and the maritime nature of the Philippines, the API may return cells containing substantial water areas, which could introduce inconsistencies in the data [3]. To resolve this, area-weighted spatial aggregation is applied [4]. The climate data from each selected grid cell is multiplied by its land-area weight and accumulated, then divided by the total weight for that region. This normalization also absorbs small floating-point differences, so that the total weight does not need to be exactly one.
           </p>
           <p>
-            Since there are thousands of undocumented islands in the archipelago, this paper only aims to include the ones that are documented from sir Faeldon’s Philippines json maps github page, along with the arbitration of the region borders as of November 2026 [5]. Once the grids and their weighted data have been computed, they are compiled into a single CSV file for that specific region. In total, 18 CSV files (one for each region) are generated by <code>utilities/data_retriever.py</code> and saved in <code>gathered_data/regions</code>.
+            Since there are thousands of undocumented islands in the archipelago, this paper only includes the islands documented in Faeldon's Philippines JSON maps GitHub repository, together with the region borders as of November 2026 [5]. Once the grid cells and their weighted data have been computed, they are compiled into a single CSV file for each region. In total, 18 CSV files (one per region) are generated by <code>utilities/data_retriever.py</code> and saved in <code>gathered_data/regions</code>.
           </p>
           <figure>
-            <img src="./static/images/1.png" alt="">
-            <figcaption>The regions of the Philippines and a portion of MERRA2 grid imported into Qgis so as to weight each grid cells with respect to the region</figcaption>
+            <img src="./static/images/1.png" alt="The regions of the Philippines overlaid with a portion of the MERRA-2 grid in QGIS">
+            <figcaption>The regions of the Philippines and a portion of the MERRA-2 grid imported into QGIS to weight each grid cell with respect to its region.</figcaption>
           </figure>
+
           <h4 class="title is-4">Data Processing</h4>
           <p>After gathering the data, <code>utilities/data_reader.py</code> reads the regional CSV files from <code>gathered_data/regions</code>. The <code>read_monthly_data()</code> function computes the monthly datasets, while <code>prepare_monthly_data()</code> saves the shared processed files used by the clustering methods. The annual column (ANN) remains in the original records but is excluded from these monthly datasets.</p>
-          <p>The raw data is a dictionary containing the regions’ names as keys and an array of yearly parameter records as each value. Each record contains "PARAMETER," "YEAR," "GRID_LAYER," the twelve monthly columns, and "ANN."</p>
-          <p>For each of the 12 months, the values of the 18 regions’ four parameters, namely precipitation, temperature, wind, and solar, throughout 2001 to 2025 are then averaged and stored in a dictionary through regional_average(). This function returns an alphabetically sorted array of regions’ names, their monthly averages stored in an array, and the headers following this format "GRID_PARAMETER_MONTH." </p>
-          <p>The monthly averages are then passed to standardize_data() to place the four parameters on comparable scales. For each parameter column, the function calculates the mean and standard deviation across the 18 regions. Each value is standardized by subtracting the column’s mean and dividing by its standard deviation:</p>
+          <p>The raw data is a dictionary whose keys are the region names and whose values are arrays of yearly parameter records. Each record contains "PARAMETER," "YEAR," "GRID_LAYER," the twelve monthly columns, and "ANN."</p>
+          <p>For each of the 12 months, the values of the four parameters (precipitation, temperature, wind, and solar) for each of the 18 regions from 2001 to 2025 are averaged by <code>regional_average()</code> and stored in a dictionary. This function returns an alphabetically sorted array of region names, an array of their monthly averages, and the headers following the format "GRID_PARAMETER_MONTH."</p>
+          <p>The monthly averages are then passed to <code>standardize_data()</code> to place the four parameters on comparable scales. For each parameter column, the function calculates the mean and standard deviation across the 18 regions. Each value is standardized by subtracting the column's mean and dividing by its standard deviation:</p>
           <p>standardized value = (value − column mean) / column standard deviation</p>
           <p>This prevents a parameter from dominating the distance calculations simply because its numerical values are larger [4,5]. If all regions have the same value for a column, its standardized values are set to zero to avoid division by zero. The original monthly averages are preserved separately.</p>
-          <p>Finally, read_monthly_data() returns four items: regions, monthly_values, monthly_headers, and monthly_averages. regions contains the alphabetically sorted region names, while the other three are dictionaries with keys from "JAN" to "DEC". Each monthly dataset contains 18 rows representing the regions and four columns representing precipitation, temperature, wind, and solar values. monthly_values contains the values standardized across regions for clustering, monthly_headers contains their corresponding column names ("GRID_PARAMETER_MONTH"), and monthly_averages keeps the averages in their original units. </p>
+          <p>Finally, <code>read_monthly_data()</code> returns four items: <code>regions</code>, <code>monthly_values</code>, <code>monthly_headers</code>, and <code>monthly_averages</code>. <code>regions</code> contains the alphabetically sorted region names, while the other three are dictionaries with keys from "JAN" to "DEC". Each monthly dataset contains 18 rows representing the regions and four columns representing precipitation, temperature, wind, and solar values. <code>monthly_values</code> contains the values standardized across regions for clustering, <code>monthly_headers</code> contains their corresponding column names ("GRID_PARAMETER_MONTH"), and <code>monthly_averages</code> keeps the averages in their original units.</p>
+
           <h4 class="title is-4">Methods</h4>
           <p>
-            This section describes the four clustering methods used to group
-            the 18 Philippine regions according to their monthly climate
-            profiles: K-Means, Agglomerative Hierarchical Clustering,
-            Gaussian Mixture Model (GMM), and DBSCAN. Each method uses four
-            climate variables: precipitation, temperature, wind speed, and
-            solar irradiance. Clustering is performed independently for each
-            month from January to December. The following subsections explain
-            the implementation and configuration of each method.
+            This section describes the four clustering methods used to group the 18 Philippine regions according to their monthly climate profiles: K-Means, Agglomerative Hierarchical Clustering, Gaussian Mixture Model (GMM), and DBSCAN. Each method uses four climate variables: precipitation, temperature, wind speed, and solar irradiance. Clustering is performed independently for each month from January to December. The following subsections explain the implementation and configuration of each method.
           </p>
-          
+
           <h5 class="title is-5">Method 1: K-Means</h5>
-          
+
           <p>
-            K-means groups the 18 regions found in the data set into
-            <em>k</em> clusters and aims to minimize the sum of squared
-            Euclidean distances between each region and the centroid of its
-            assigned cluster [6]. Clustering is performed separately for
-            each month, from January to December. In each run, every region
-            is represented by four climate variables: precipitation,
-            temperature, wind speed, and solar irradiance. These values are
-            averaged over the period from 2001 to 2025 using
-            <code>read_monthly_data()</code>.
+            K-means groups the 18 regions into <em>k</em> clusters and aims to minimize the sum of squared Euclidean distances between each region and the centroid of its assigned cluster [6]. Clustering is performed separately for each month, from January to December. In each run, every region is represented by four climate variables: precipitation, temperature, wind speed, and solar irradiance. These values are averaged over the period from 2001 to 2025 using <code>read_monthly_data()</code>.
           </p>
-          
+
           <p>
-            Since the four variables have different units and numerical
-            ranges, each feature is standardized using z-scores across the
-            regions before clustering. This ensures that no single
-            parameter disproportionately influences the distance
-            calculations [4,7]. The standardized value is computed as:
+            Since the four variables have different units and numerical ranges, each feature is standardized using z-scores across the regions before clustering. This ensures that no single parameter disproportionately influences the distance calculations [4,7]. The standardized value is computed as:
           </p>
-          
+
           \[
           z_{ij} = \frac{x_{ij} - \mu_j}{\sigma_j}
           \tag{1}
           \]
-          
+
           <p>
-            where \(x_{ij}\) is the original value of feature \(j\) for
-            region \(i\), \(\mu_j\) is the mean of feature \(j\) across
-            all regions, and \(\sigma_j\) is its standard deviation.
+            where \(x_{ij}\) is the original value of feature \(j\) for region \(i\), \(\mu_j\) is the mean of feature \(j\) across all regions, and \(\sigma_j\) is its standard deviation.
           </p>
-          
+
           <h6 class="title is-6">Centroid Initialization</h6>
-          
+
           <p>
-            The algorithm implemented in <code>kmeans_clustering.py</code>
-            begins by randomly selecting \(k\) distinct regions as the
-            initial centroids. Each region is then assigned to its nearest
-            centroid based on Euclidean distance. The distance between a
-            region and a centroid is calculated as:
+            The algorithm implemented in <code>kmeans_clustering.py</code> begins by randomly selecting \(k\) distinct regions as the initial centroids. Each region is then assigned to its nearest centroid based on Euclidean distance. The distance between a region and a centroid is calculated as:
           </p>
-          
+
           \[
-          d(\mathbf{x}_i,{\mu}_j)
+          d(\mathbf{x}_i,\textbf{\mu}_j)
           =
           \sqrt{
             \sum_{r=1}^{4}
@@ -456,291 +435,178 @@
           }
           \tag{2}
           \]
-          
+
           <p>
-            where \(\mathbf{x}_i\) represents the four-dimensional feature
-            vector of region \(i\), and \({\mu}_j\) represents
-            the centroid of cluster \(j\).
+            where \(\mathbf{x}_i\) represents the four-dimensional feature vector of region \(i\), and \(\textbf{\mu}_j\) represents the centroid of cluster \(j\).
           </p>
-          
+
           <h6 class="title is-6">Cluster Assignment and Centroid Update</h6>
-          
+
           <p>
-            After calculating the distances, each region is assigned to
-            the cluster whose centroid is closest to it. The centroid of
-            each cluster is then updated by computing the mean of all
-            feature vectors assigned to that cluster:
+            After calculating the distances, each region is assigned to the cluster whose centroid is closest to it. The centroid of each cluster is then updated by computing the mean of all feature vectors assigned to that cluster:
           </p>
-          
+
           \[
           C_i =
           \operatorname*{arg\,min}_{j \in \{1,\ldots,k\}}
-          d(\mathbf{x}_i,{\mu}_j)
+          d(\mathbf{x}_i,\textbf{\mu}_j)
           \tag{3}
           \]
-          
+
           \[
-          {\mu}_j =
+          \textbf{\mu}_j =
           \frac{1}{|C_j|}
           \sum_{\mathbf{x}_i \in C_j}
           \mathbf{x}_i
           \tag{4}
           \]
-          
+
           <p>
-            where \(C_i\) denotes the cluster assignment of region \(i\),
-            and \(C_j\) represents the set of regions assigned to cluster
-            \(j\). The assignment and centroid update steps are repeated
-            until the centroids no longer change [6].
+            where \(C_i\) denotes the cluster assignment of region \(i\), and \(C_j\) represents the set of regions assigned to cluster \(j\). The assignment and centroid update steps are repeated until the centroids no longer change [6].
           </p>
-          
+
           <h6 class="title is-6">Selection of the Number of Clusters</h6>
-          
+
           <p>
-            The same value of \(k\) is used for all twelve monthly
-            clustering runs. This value was selected by executing K-means
-            over a range of candidate \(k\) values and comparing the
-            resulting Silhouette Score and Davies-Bouldin Index. The
-            selected value of \(k\) corresponds to the highest Silhouette
-            Score and the lowest Davies-Bouldin Index [15,20] (see Evaluation Metrics).
+            The same value of \(k\) is used for all twelve monthly clustering runs. This value is selected by executing K-means over a range of candidate \(k\) values and ranking each candidate by its Silhouette Score and Davies-Bouldin Index. The two rankings are then summed, and the \(k\) with the lowest combined rank is selected [15,20] (see Evaluation Metrics and the Metric Evaluation Plan).
           </p>
-          
+
           <h6 class="title is-6">Random Seed and Reproducibility</h6>
-          
+
           <p>
-            The final clustering results depend heavily on the initial
-            centroid positions, as an unfavorable initialization may lead
-            the algorithm to a local minimum [6]. To ensure that all group
-            members obtain identical results, the random number generator
-            is initialized with a fixed seed of \(170\) before clustering.
-            This causes the generator to produce the same sequence of
-            random values across runs, allowing members using the same
-            environment to select the same initial regions and obtain
-            reproducible clusters [8].
+            The final clustering results depend heavily on the initial centroid positions, as an unfavorable initialization may lead the algorithm to a local minimum [6]. To ensure that all group members obtain identical results, the random number generator is initialized with a fixed seed of \(170\) before clustering. This causes the generator to produce the same sequence of random values across runs, allowing members using the same environment to select the same initial regions and obtain reproducible clusters [8].
           </p>
-          
+
           <p>
-            However, seeding only improves reproducibility and does not
-            guarantee better clustering results. Since only one run is
-            performed per month, each result reflects a single set of
-            initial centroids, which may not produce the best possible
-            grouping [6]. Furthermore, random sequences may differ across
-            Python versions [8], so all group members should use the same
-            Python version to maintain consistency.
+            However, seeding only improves reproducibility and does not guarantee better clustering results. Since only one run is performed per month, each result reflects a single set of initial centroids, which may not produce the best possible grouping [6]. Furthermore, random sequences may differ across Python versions [8], so all group members should use the same Python version to maintain consistency.
           </p>
-          
+
           <h6 class="title is-6">Visualization of Clustering Results</h6>
-          
+
           <p>
-            Since the four climate variables cannot be directly represented
-            in a traditional two-dimensional scatter plot, the clustering
-            results for each month are visualized using two separate
-            scatter plots. The first plot presents precipitation against
-            temperature, while the second presents wind speed against
-            solar irradiance.
+            Since the four climate variables cannot be directly represented in a traditional two-dimensional scatter plot, the clustering results for each month are visualized using two separate scatter plots. The first plot presents precipitation against temperature, while the second presents wind speed against solar irradiance.
           </p>
-          
+
           <p>
-            The points in both plots are colored according to the cluster
-            assignments obtained from the full four-dimensional clustering
-            process. Thus, each plot provides a two-dimensional view of the
-            same clustering result, with each displaying only two of the
-            four climate variables. The two plots should therefore be
-            interpreted together when examining the monthly clustering
-            results.
+            The points in both plots are colored according to the cluster assignments obtained from the full four-dimensional clustering process. Thus, each plot provides a two-dimensional view of the same clustering result, displaying only two of the four climate variables. The two plots should therefore be interpreted together when examining the monthly clustering results.
           </p>
-          
+
           <h5 class="title is-5">Method 2: Hierarchical Clustering</h5>
-          
+
           <p>
-            The Python file <code>hierarchical_clustering.py</code>
-            implements agglomerative hierarchical clustering, which begins
-            by treating each observation as an individual cluster and
-            repeatedly merges the closest clusters to construct a hierarchy
-            [9]. The resulting hierarchy is represented through a tree
-            diagram called a dendrogram [10].
+            The Python file <code>hierarchical_clustering.py</code> implements agglomerative hierarchical clustering, which begins by treating each observation as an individual cluster and repeatedly merges the closest clusters to construct a hierarchy [9]. The resulting hierarchy is represented through a tree diagram called a dendrogram [10].
           </p>
-          
+
           <p>
-            The program starts with <code>main()</code>, which calls
-            <code>read_monthly_data()</code> to obtain the preprocessed
-            datasets. It then prompts the user to specify the number of
-            clusters (\(k\)) and the linkage method to be used across all
-            twelve monthly datasets.
+            The program starts with <code>main()</code>, which calls <code>read_monthly_data()</code> to obtain the preprocessed datasets. It then prompts the user to specify the number of clusters (\(k\)) and the linkage method to be used across all twelve monthly datasets.
           </p>
-          
+
           <h6 class="title is-6">Distance Calculation</h6>
-          
+
           <p>
-            The <code>euclidean_distance()</code> function measures the
-            climate difference between two regions using their four
-            climate variables: precipitation, temperature, wind speed,
-            and solar irradiance. The Euclidean distance between two
-            regions is calculated as:
+            The <code>euclidean_distance()</code> function measures the climate difference between two regions using their four climate variables: precipitation, temperature, wind speed, and solar irradiance. The Euclidean distance between two regions is calculated as:
           </p>
-          
+
           \[
           d(a,b) =
           \sqrt{
             \sum_{i=1}^{4}(a_i-b_i)^2
           }
-          \tag{1}
+          \tag{5}
           \]
-          
+
           <p>
-            where \(a\) and \(b\) represent the four-dimensional climate
-            feature vectors of two regions, and \(a_i\) and \(b_i\)
-            represent their respective values for feature \(i\).
+            where \(a\) and \(b\) represent the four-dimensional climate feature vectors of two regions, and \(a_i\) and \(b_i\) represent their respective values for feature \(i\).
           </p>
-          
+
           <h6 class="title is-6">Average Linkage</h6>
-          
+
           <p>
-            Average linkage is selected to calculate the distance between
-            clusters because it considers all pairwise distances between
-            observations belonging to two clusters, providing an overall
-            measure of their climate differences. The average linkage
-            distance between clusters \(A\) and \(B\) is calculated as:
+            Average linkage is selected to calculate the distance between clusters because it considers all pairwise distances between observations belonging to two clusters, providing an overall measure of their climate differences. The average linkage distance between clusters \(A\) and \(B\) is calculated as:
           </p>
-          
+
           \[
           D(A,B) =
           \frac{1}{|A||B|}
           \sum_{a \in A}
           \sum_{b \in B}
           d(a,b)
-          \tag{2}
+          \tag{6}
           \]
-          
+
           <p>
-            where \(A\) and \(B\) represent two clusters, \(|A|\) and
-            \(|B|\) denote the number of observations in each cluster,
-            and \(d(a,b)\) is the Euclidean distance between observations
-            \(a\) and \(b\).
+            where \(A\) and \(B\) represent two clusters, \(|A|\) and \(|B|\) denote the number of observations in each cluster, and \(d(a,b)\) is the Euclidean distance between observations \(a\) and \(b\).
           </p>
-          
+
           <p>
-            Lund and Li describe average linkage as a compromise between
-            single and complete linkage in climatic regionalization [11].
-            Additionally, Fiddes et al. compared different clustering
-            methods and preferred average linkage in their study [12].
-            These studies support the selection of average linkage for
-            this project.
+            Lund and Li describe average linkage as a compromise between single and complete linkage in climatic regionalization [11]. Additionally, Fiddes et al. compared different clustering methods and preferred average linkage in their study [12]. These studies support the selection of average linkage for this project.
           </p>
-          
+
           <h6 class="title is-6">Cluster Merging</h6>
-          
+
           <p>
-            The <code>hierarchical_clustering()</code> function repeatedly
-            identifies and merges the two clusters with the smallest
-            average linkage distance. At each iteration, the program
-            records the IDs of the merged clusters, the distance at which
-            they were joined, and the number of regions in the resulting
-            cluster.
+            The <code>hierarchical_clustering()</code> function repeatedly identifies and merges the two clusters with the smallest average linkage distance. At each iteration, the program records the IDs of the merged clusters, the distance at which they were joined, and the number of regions in the resulting cluster.
           </p>
-          
+
           <p>
-            Initially, each of the 18 regions forms its own cluster.
-            During each iteration, the number of clusters decreases by
-            one as the closest pair is merged. When the number of
-            remaining clusters reaches the user-specified value of
-            \(k\), the program saves the corresponding cluster
-            assignments. However, it continues merging the remaining
-            clusters to construct the complete hierarchy. The function
-            returns both the selected cluster assignments and the
-            complete merge history.
+            Initially, each of the 18 regions forms its own cluster. During each iteration, the number of clusters decreases by one as the closest pair is merged. When the number of remaining clusters reaches the user-specified value of \(k\), the program saves the corresponding cluster assignments. However, it continues merging the remaining clusters to construct the complete hierarchy. The function returns both the selected cluster assignments and the complete merge history.
           </p>
-          
+
           <h6 class="title is-6">Dendrogram Visualization</h6>
-          
+
           <p>
-            The <code>draw_dendrogram()</code> function uses the recorded
-            merge history to generate a dendrogram for each month,
-            producing twelve diagrams in total. Each dendrogram displays
-            the 18 region names along the horizontal axis, while the
-            vertical axis represents the average linkage distance at
-            which clusters were merged [13].
+            The <code>draw_dendrogram()</code> function uses the recorded merge history to generate a dendrogram for each month, producing twelve diagrams in total. Each dendrogram displays the 18 region names along the horizontal axis, while the vertical axis represents the average linkage distance at which clusters were merged [13].
           </p>
-          
+
           <p>
-            Cluster labels are also displayed alongside the region names.
-            For example, a label such as CAR (C1) indicates that the
-            Cordillera Administrative Region belongs to Cluster 1.
-            Changing the value of \(k\) affects the cluster assignments
-            and corresponding labels, but does not change the underlying
-            dendrogram for the same dataset and linkage method.
+            Cluster labels are also displayed alongside the region names. For example, a label such as CAR (C1) indicates that the Cordillera Administrative Region belongs to Cluster 1. Changing the value of \(k\) affects the cluster assignments and corresponding labels, but does not change the underlying dendrogram for the same dataset and linkage method.
           </p>
-          
+
           <h6 class="title is-6">Output Generation</h6>
-          
+
           <p>
-            Finally, the <code>write_output()</code> function saves the
-            resulting cluster assignments, original monthly averages,
-            standardized values, merge history, and cluster summary.
-            These outputs provide the data needed to examine the
-            clustering results and interpret the hierarchical
-            relationships among the regions.
+            Finally, the <code>write_output()</code> function saves the resulting cluster assignments, original monthly averages, standardized values, merge history, and cluster summary. These outputs provide the data needed to examine the clustering results and interpret the hierarchical relationships among the regions.
           </p>
-          
-          
+
           <h5 class="title is-5">Method 3: Gaussian Mixture Model (GMM)</h5>
-          
+
           <p>
-            The Gaussian Mixture Model (GMM) is an unsupervised learning algorithm
-            that represents the data as a mixture of multiple Gaussian
-            distributions. The implementation follows an iterative process
-            consisting of parameter initialization, the Expectation step,
-            the Maximization step, and a convergence test.
+            The Gaussian Mixture Model (GMM) is an unsupervised learning algorithm that represents the data as a mixture of multiple Gaussian distributions. The implementation follows an iterative process consisting of parameter initialization, the Expectation step, the Maximization step, and a convergence test.
           </p>
-          
+
           <h6 class="title is-6">Step 0: Define the Parameters</h6>
-          
+
           <p>
-            Given a dataset containing \(N\) observations, define the number
-            of Gaussian components \(K\) and the convergence tolerance
-            \(\epsilon\). Each component is characterized by its mean
-            vector, covariance matrix, and mixing weight.
+            Given a dataset containing \(N\) observations, define the number of Gaussian components \(K\) and the convergence tolerance \(\epsilon\). Each component is characterized by its mean vector, covariance matrix, and mixing weight.
           </p>
-          
+
           <h6 class="title is-6">Step 1: Parameter Initialization</h6>
-          
+
           <p>
-            Initialize the parameters of the Gaussian components before
-            performing the iterative optimization process. The initial means
-            are selected by randomly sampling \(K\) distinct observations
-            from the dataset without replacement. Each component is assigned
-            an equal mixing weight:
+            Initialize the parameters of the Gaussian components before performing the iterative optimization process. The initial means are selected by randomly sampling \(K\) distinct observations from the dataset without replacement. Each component is assigned an equal mixing weight:
           </p>
-          
+
           <p>
             \[
             \pi_k = \frac{1}{K}
-            \tag{1}
+            \tag{7}
             \]
           </p>
-          
+
           <p>
-            The initial covariance matrices are set using the global population
-            covariance matrix of the dataset. This provides a common estimate
-            of the overall data dispersion for all Gaussian components.
+            The initial covariance matrices are set using the global population covariance matrix of the dataset. This provides a common estimate of the overall data dispersion for all Gaussian components.
           </p>
-          
+
           <p>
-            Alternatively, K-means clustering can be used to initialize the
-            component means using its cluster centroids. However, random
-            initialization was selected to maintain the independence of GMM
-            from the K-means implementation during the algorithm comparison.
+            Alternatively, K-means clustering can be used to initialize the component means using its cluster centroids. However, random initialization was selected to maintain the independence of GMM from the K-means implementation during the algorithm comparison.
           </p>
-          
+
           <h6 class="title is-6">Step 2: Expectation Step (E-step)</h6>
-          
+
           <p>
-            Calculate the responsibility of each Gaussian component for every
-            observation. The responsibility represents the posterior
-            probability that observation \(x_i\) belongs to component \(k\),
-            given the current parameter estimates.
+            Calculate the responsibility of each Gaussian component for every observation. The responsibility represents the posterior probability that observation \(x_i\) belongs to component \(k\), given the current parameter estimates.
           </p>
-          
+
           <p>
             \[
             \gamma_{ik} =
@@ -750,51 +616,44 @@
               \sum_{j=1}^{K}
               \pi_j \mathcal{N}(x_i \mid \mu_j, \Sigma_j)
             }
-            \tag{2}
+            \tag{8}
             \]
           </p>
-          
+
           <p>
-            where \(\gamma_{ik}\) is the responsibility of component \(k\)
-            for observation \(x_i\), \(\pi_k\) is its mixing weight,
-            \(\mu_k\) is its mean vector, and \(\Sigma_k\) is its covariance
-            matrix.
+            where \(\gamma_{ik}\) is the responsibility of component \(k\) for observation \(x_i\), \(\pi_k\) is its mixing weight, \(\mu_k\) is its mean vector, and \(\Sigma_k\) is its covariance matrix.
           </p>
-          
+
           <h6 class="title is-6">Step 3: Maximization Step (M-step)</h6>
-          
+
           <p>
-            Update the parameters of each Gaussian component using the
-            responsibilities calculated during the E-step. First, calculate
-            the effective number of observations assigned to each component:
+            Update the parameters of each Gaussian component using the responsibilities calculated during the E-step. First, calculate the effective number of observations assigned to each component:
           </p>
-          
+
           <p>
             \[
             N_k = \sum_{i=1}^{N} \gamma_{ik}
-            \tag{3}
+            \tag{9}
             \]
           </p>
-          
+
           <p>
-            The mean vector of each component is updated using the weighted
-            average of the observations:
+            The mean vector of each component is updated using the weighted average of the observations:
           </p>
-          
+
           <p>
             \[
             \mu_k =
             \frac{1}{N_k}
             \sum_{i=1}^{N} \gamma_{ik}x_i
-            \tag{4}
+            \tag{10}
             \]
           </p>
-          
+
           <p>
-            The covariance matrix is updated using the weighted deviations
-            of the observations from the updated mean:
+            The covariance matrix is updated using the weighted deviations of the observations from the updated mean:
           </p>
-          
+
           <p>
             \[
             \Sigma_k =
@@ -802,29 +661,27 @@
             \sum_{i=1}^{N}
             \gamma_{ik}
             (x_i-\mu_k)(x_i-\mu_k)^T
-            \tag{5}
+            \tag{11}
             \]
           </p>
-          
+
           <p>
-            Finally, update the mixing weight of each component based on its
-            effective number of observations:
+            Finally, update the mixing weight of each component based on its effective number of observations:
           </p>
-          
+
           <p>
             \[
             \pi_k = \frac{N_k}{N}
-            \tag{6}
+            \tag{12}
             \]
           </p>
-          
+
           <h6 class="title is-6">Step 4: Convergence Test</h6>
-          
+
           <p>
-            Evaluate the log-likelihood of the dataset using the updated
-            parameters:
+            Evaluate the log-likelihood of the dataset using the updated parameters:
           </p>
-          
+
           <p>
             \[
             \mathcal{L} =
@@ -834,172 +691,111 @@
             \pi_k
             \mathcal{N}(x_i \mid \mu_k, \Sigma_k)
             \right)
-            \tag{7}
+            \tag{13}
             \]
           </p>
-          
+
           <p>
-            Compare the current log-likelihood with the value from the
-            previous iteration. If the absolute difference is less than
-            the specified convergence tolerance, the algorithm terminates.
-            Otherwise, repeat the E-step and M-step until convergence is
-            achieved.
+            Compare the current log-likelihood with the value from the previous iteration. If the absolute difference is less than the specified convergence tolerance, the algorithm terminates. Otherwise, repeat the E-step and M-step until convergence is achieved.
           </p>
-          
+
           <h6 class="title is-6">Final Cluster Assignment</h6>
-          
+
           <p>
-            Once the algorithm converges, assign each observation to the
-            Gaussian component with the highest responsibility:
+            Once the algorithm converges, assign each observation to the Gaussian component with the highest responsibility:
           </p>
-          
+
           <p>
             \[
             C_i = \arg\max_{k \in \{1,\ldots,K\}} \gamma_{ik}
+            \tag{14}
             \]
           </p>
-          
+
           <p>
-            The resulting cluster assignments are then written to the output
-            file using the <code>write_output()</code> function.
+            The resulting cluster assignments are then written to the output file using the <code>write_output()</code> function.
           </p>
-          
+
           <h5 class="title is-5">Method 4: DBSCAN Clustering</h5>
-          
+
           <h6 class="title is-6">Data Representation and Preparation</h6>
-          
+
           <p>
-            The Density-Based Spatial Clustering of Applications with Noise
-            (DBSCAN) algorithm was implemented to group Philippine regions
-            according to the similarity of their monthly climate profiles.
-            Each region was represented as a multidimensional data point,
-            with its coordinates corresponding to the values of four climate
-            parameters: 2-meter temperature (T2), corrected precipitation
-            (PRECTOTCORR), wind speed at 10 meters (WS10M), and downward
-            shortwave solar radiation at the surface (ALLSKY_SFC_SW_DWN).
+            The Density-Based Spatial Clustering of Applications with Noise (DBSCAN) algorithm was implemented to group Philippine regions according to the similarity of their monthly climate profiles. Each region was represented as a multidimensional data point, with its coordinates corresponding to the values of four climate parameters: 2-meter temperature (T2M), corrected precipitation (PRECTOTCORR), wind speed at 10 meters (WS10M), and downward shortwave solar radiation at the surface (ALLSKY_SFC_SW_DWN).
           </p>
-          
+
           <p>
-            The implementation processes each month independently. For a
-            given month, the corresponding climate values of each region
-            are retrieved and represented as a point in a four-dimensional
-            feature space. Each point is assigned the following attributes:
-            its corresponding region, climate coordinates, core-point status,
-            list of neighboring points, and cluster assignment. Initially,
-            all points are assigned a cluster identifier of -1, indicating
-            that they have not yet been assigned to a cluster.
+            The implementation processes each month independently. For a given month, the corresponding climate values of each region are retrieved and represented as a point in a four-dimensional feature space. Each point is assigned the following attributes: its corresponding region, climate coordinates, core-point status, list of neighboring points, and cluster assignment. Initially, all points are assigned a cluster identifier of -1, indicating that they have not yet been assigned to a cluster.
           </p>
-          
+
           <p>
-            Euclidean distance is used to measure the similarity between
-            two points in the feature space. Given two points \(p\) and
-            \(q\), each containing \(d\) climate attributes, their Euclidean
-            distance is calculated as:
+            Euclidean distance is used to measure the similarity between two points in the feature space. Given two points \(p\) and \(q\), each containing \(d\) climate attributes, their Euclidean distance is calculated as:
           </p>
-          
+
           <p>
             \[
             d(p,q) =
             \sqrt{
               \sum_{i=1}^{d}(p_i-q_i)^2
             }
-            \tag{1}
+            \tag{15}
             \]
           </p>
-          
+
           <p>
-            where \(p_i\) and \(q_i\) represent the values of the
-            \(i\)-th climate parameter of points \(p\) and \(q\),
-            respectively. A smaller distance indicates greater similarity
-            between the climate profiles of two regions.
+            where \(p_i\) and \(q_i\) represent the values of the \(i\)-th climate parameter of points \(p\) and \(q\), respectively. A smaller distance indicates greater similarity between the climate profiles of two regions.
           </p>
-          
+
           <h6 class="title is-6">Parameter Configuration</h6>
-          
+
           <p>
-            DBSCAN requires two parameters: the neighborhood radius
-            \(\varepsilon\) (epsilon) and the minimum number of points
-            required to form a dense region, \(\text{MinPts}\). The
-            epsilon parameter determines the maximum distance between
-            two points for them to be considered neighbors, while
-            \(\text{MinPts}\) determines the minimum neighborhood
-            population required for a point to be classified as a core point.
+            DBSCAN requires two parameters: the neighborhood radius \(\varepsilon\) (epsilon) and the minimum number of points required to form a dense region, \(\text{MinPts}\). The epsilon parameter determines the maximum distance between two points for them to be considered neighbors, while \(\text{MinPts}\) determines the minimum neighborhood population required for a point to be classified as a core point.
           </p>
-          
+
           <p>
-            In this implementation, \(\text{MinPts}\) was set to 5 based
-            on the dimensionality of the dataset. A general guideline for
-            selecting \(\text{MinPts}\) is to use a value greater than or
-            equal to the number of dimensions plus one, expressed as:
+            In this implementation, \(\text{MinPts}\) was set to 5 based on the dimensionality of the dataset. A general guideline for selecting \(\text{MinPts}\) is to use a value greater than or equal to the number of dimensions plus one, expressed as:
           </p>
-          
+
           <p>
             \[
             \text{MinPts} \geq D+1
-            \tag{2}
+            \tag{16}
             \]
           </p>
-          
+
           <p>
-            Since each observation in this study is represented by four
-            climate parameters, the minimum value is therefore set to 5.
-            The selected \(\text{MinPts}\) value is applied consistently
-            across all monthly datasets. However, the epsilon parameter
-            is determined separately for each month using its corresponding
-            \(k\)-distance distribution. This allows the neighborhood radius
-            to reflect the distribution of climate profiles within each
-            monthly dataset rather than applying a single fixed epsilon
-            value throughout the year.
+            Since each observation in this study is represented by four climate parameters, the minimum value is therefore 5. The selected \(\text{MinPts}\) value is applied consistently across all monthly datasets. However, the epsilon parameter is determined separately for each month using its corresponding \(k\)-distance distribution. This allows the neighborhood radius to reflect the distribution of climate profiles within each monthly dataset rather than applying a single fixed epsilon value throughout the year.
           </p>
-          
+
           <p>
-            Since the implementation excludes the point itself from its
-            stored neighbor list, the core-point condition is expressed as:
+            Since the implementation excludes the point itself from its stored neighbor list, the core-point condition is expressed as:
           </p>
-          
+
           <p>
             \[
             |N_{\varepsilon}(p)|+1 \geq \text{MinPts}
-            \tag{3}
+            \tag{17}
             \]
           </p>
-          
+
           <p>
-            where \(N_{\varepsilon}(p)\) denotes the set of neighboring
-            points of \(p\) within the specified epsilon radius.
-            Consequently, a point must have at least four other neighboring
-            points to satisfy the \(\text{MinPts}\) requirement.
+            where \(N_{\varepsilon}(p)\) denotes the set of neighboring points of \(p\) within the specified epsilon radius. Consequently, a point must have at least four other neighboring points to satisfy the \(\text{MinPts}\) requirement.
           </p>
-          
+
           <h6 class="title is-6">Epsilon Estimation Using the k-Distance Graph</h6>
-          
+
           <p>
-            The selection of epsilon is an important consideration in
-            DBSCAN because inappropriate parameter values can affect the
-            resulting cluster structure and the number of observations
-            classified as noise. A \(k\)-distance graph provides a means
-            of examining the distribution of distances between observations
-            and their \(k\)-th nearest neighbors. Yin et al. [4] discuss
-            the use of \(k\)-distance curves for determining DBSCAN
-            parameters and identifying suitable epsilon values.
+            The selection of epsilon is an important consideration in DBSCAN because inappropriate parameter values can affect the resulting cluster structure and the number of observations classified as noise. A \(k\)-distance graph provides a means of examining the distribution of distances between observations and their \(k\)-th nearest neighbors. Yin et al. [4] discuss the use of \(k\)-distance curves for determining DBSCAN parameters and identifying suitable epsilon values.
           </p>
-          
+
           <p>
-            In this implementation, the \(k\)-distance of each point is
-            calculated using its distance to the fourth-nearest neighboring
-            point. This corresponds to \(k=4\), since \(\text{MinPts}\)
-            is set to 5 and the point itself is excluded from the distance
-            calculations. The distances are calculated using (1), sorted
-            in ascending order for each point, and then sorted again across
-            all points to generate the \(k\)-distance graph.
+            In this implementation, the \(k\)-distance of each point is calculated using its distance to the fourth-nearest neighboring point. This corresponds to \(k=4\), since \(\text{MinPts}\) is set to 5 and the point itself is excluded from the distance calculations. The distances are calculated using (15) and sorted in ascending order for each point. The resulting \(k\)-distance values are then sorted across all points to generate the \(k\)-distance graph.
           </p>
-          
+
           <p>
-            Let \(d_k(p)\) denote the distance from point \(p\) to its
-            \(k\)-th nearest neighbor. The sorted \(k\)-distance sequence
-            is represented as:
+            Let \(d_k(p)\) denote the distance from point \(p\) to its \(k\)-th nearest neighbor. The sorted \(k\)-distance sequence is represented as:
           </p>
-          
+
           <p>
             \[
             K =
@@ -1010,341 +806,287 @@
             \ldots,
             d_k(p_n)
             \right)
-            \tag{4}
+            \tag{18}
             \]
           </p>
-          
+
           <p>
-            where \(n\) is the number of data points and \(k=4\).
-            The horizontal axis of the resulting graph represents the
-            position of each point in the sorted sequence, while the
-            vertical axis represents its corresponding \(k\)-distance.
+            where \(n\) is the number of data points and \(k=4\). The horizontal axis of the resulting graph represents the position of each point in the sorted sequence, while the vertical axis represents its corresponding \(k\)-distance.
           </p>
-          
+
           <p>
-            To estimate epsilon, the implementation applies a
-            maximum-deviation heuristic to the normalized \(k\)-distance
-            graph. First, the horizontal and vertical coordinates are
-            independently normalized to the interval \([0,1]\) using
-            min-max normalization:
+            To estimate epsilon, the implementation applies a maximum-deviation heuristic to the normalized \(k\)-distance graph. First, the horizontal and vertical coordinates are independently normalized to the interval \([0,1]\) using min-max normalization:
           </p>
-          
+
           <p>
             \[
             x_i' =
             \frac{x_i-x_{\min}}{x_{\max}-x_{\min}}
-            \tag{5}
+            \tag{19}
             \]
           </p>
-          
+
           <p>
             \[
             y_i' =
             \frac{y_i-y_{\min}}{y_{\max}-y_{\min}}
-            \tag{6}
+            \tag{20}
             \]
           </p>
-          
+
           <p>
-            where \(x_i\) and \(y_i\) represent the original coordinates
-            of the \(k\)-distance graph, and \(x_i'\) and \(y_i'\)
-            represent their normalized values.
+            where \(x_i\) and \(y_i\) represent the original coordinates of the \(k\)-distance graph, and \(x_i'\) and \(y_i'\) represent their normalized values.
           </p>
-          
+
           <p>
             The deviation at each position is then calculated as:
           </p>
-          
+
           <p>
             \[
             D_i = x_i'-y_i'
-            \tag{7}
+            \tag{21}
             \]
           </p>
-          
+
           <p>
-            The index corresponding to the maximum deviation is selected
-            as the estimated knee position:
+            The index corresponding to the maximum deviation is selected as the estimated knee position:
           </p>
-          
+
           <p>
             \[
             i^* =
             \operatorname*{arg\,max}_{i} D_i
-            \tag{8}
+            \tag{22}
             \]
           </p>
-          
+
           <p>
-            Finally, the epsilon value is obtained from the original,
-            unnormalized \(k\)-distance sequence at the selected index:
+            Finally, the epsilon value is obtained from the original, unnormalized \(k\)-distance sequence at the selected index:
           </p>
-          
+
           <p>
             \[
             \varepsilon = K_{i^*}
-            \tag{9}
+            \tag{23}
             \]
           </p>
-          
+
           <p>
-            This procedure is inspired by the general concept of knee
-            detection, in which a significant change in a curve is used
-            to identify an appropriate operating point. Satopää et al. [5]
-            introduced the Kneedle algorithm, which detects knee points
-            through normalization, transformation of the curve, and the
-            identification of local maxima subject to threshold conditions.
-            However, the present implementation uses a simplified
-            maximum-deviation approach. It does not implement the complete
-            Kneedle procedure, particularly its local-maximum detection
-            and sensitivity-based thresholding. Therefore, the method is
-            treated as a maximum-deviation knee-selection heuristic rather
-            than a direct implementation of Kneedle.
+            This procedure is inspired by the general concept of knee detection, in which a significant change in a curve is used to identify an appropriate operating point. Satopää et al. [5] introduced the Kneedle algorithm, which detects knee points through normalization, transformation of the curve, and the identification of local maxima subject to threshold conditions. However, the present implementation uses a simplified maximum-deviation approach. It does not implement the complete Kneedle procedure, particularly its local-maximum detection and sensitivity-based thresholding. Therefore, the method is treated as a maximum-deviation knee-selection heuristic rather than a direct implementation of Kneedle.
           </p>
-          
+
           <h6 class="title is-6">Neighborhood Identification</h6>
-          
+
           <p>
-            After determining epsilon, the implementation identifies the
-            neighborhood of each point by calculating its Euclidean
-            distance from every other point in the dataset. A point \(q\)
-            is considered a neighbor of point \(p\) when the distance
-            between them is less than or equal to epsilon:
+            After determining epsilon, the implementation identifies the neighborhood of each point by calculating its Euclidean distance from every other point in the dataset. A point \(q\) is considered a neighbor of point \(p\) when the distance between them is less than or equal to epsilon:
           </p>
-          
+
           <p>
             \[
             N_{\varepsilon}(p) =
             \left\{
               q \mid q \neq p,\ d(p,q)\leq\varepsilon
-              \right\}
-              \tag{10}
-              \]
-            </p>
-            
-            <p>
-              The condition \(q \neq p\) ensures that a point is not included
-              in its own stored neighbor list. Each identified neighbor is
-              stored in the corresponding point object for subsequent
-              core-point identification and cluster expansion.
-            </p>
-            
-            <p>
-              The implementation performs an exhaustive pairwise comparison
-              between points. Thus, every point is compared with all other
-              points in the monthly dataset to determine its
-              epsilon-neighborhood.
-            </p>
-            
-            <h6 class="title is-6">Core-Point Identification</h6>
-            
-            <p>
-              Once the neighborhoods have been established, each point is
-              evaluated according to the \(\text{MinPts}\) requirement.
-              A point is classified as a core point if its
-              epsilon-neighborhood, including itself, contains at least
-              five points. This is determined using (3).
-            </p>
-            
-            <p>
-              Points that do not satisfy the \(\text{MinPts}\) requirement
-              are not immediately classified as noise. They may still become
-              members of a cluster if they are located within the
-              neighborhood of a core point. Such points are classified as
-              border points. A point that is neither assigned to a cluster
-              nor reachable from any core point is ultimately classified
-              as noise.
-            </p>
-            
-            <p>
-              The implementation records the core-point status of each
-              point to distinguish between points that can expand a cluster
-              and those that can only be assigned to an existing cluster.
-            </p>
-            
-            <h6 class="title is-6">Cluster Formation and Expansion</h6>
-            
-            <p>
-              After identifying the core points, the implementation
-              constructs clusters through a queue-based expansion procedure.
-              Each unassigned core point is considered as a starting point
-              for a new cluster. A new cluster identifier is generated,
-              and the starting point is assigned to that cluster.
-            </p>
-            
-            <p>
-              The algorithm then places the starting point's neighbors into
-              a queue for exploration. Each retrieved neighbor is checked
-              to determine whether it has already been visited. If it has
-              not been visited, it is marked as visited and assigned to
-              the current cluster if it remains unassigned.
-            </p>
-            
-            <p>
-              The expansion process depends on the classification of the
-              retrieved point. If the point is a core point, its neighbors
-              are added to the queue for further exploration. This allows
-              the cluster to expand through points that satisfy the density
-              requirement. Conversely, if the retrieved point is a border
-              point, it is assigned to the current cluster but does not
-              contribute additional neighbors to the expansion process.
-            </p>
-            
-            <p>
-              This procedure continues until the queue becomes empty,
-              indicating that no additional density-reachable points can
-              be added to the current cluster. The implementation then
-              proceeds to the next unassigned core point and repeats the
-              process until all core points have been examined.
-            </p>
-            
-            <p>
-              After all clusters have been formed, points that remain
-              unassigned are classified as noise. Cluster identifiers are
-              initially assigned starting from zero during processing.
-              For the exported results and visualizations, cluster
-              identifiers are incremented by one so that the clusters
-              are numbered starting from 1, while noise points retain
-              the identifier -1.
-            </p>
-            
-          
+            \right\}
+            \tag{24}
+            \]
+          </p>
+
+          <p>
+            The condition \(q \neq p\) ensures that a point is not included in its own stored neighbor list. Each identified neighbor is stored in the corresponding point object for subsequent core-point identification and cluster expansion.
+          </p>
+
+          <p>
+            The implementation performs an exhaustive pairwise comparison between points. Thus, every point is compared with all other points in the monthly dataset to determine its epsilon-neighborhood.
+          </p>
+
+          <h6 class="title is-6">Core-Point Identification</h6>
+
+          <p>
+            Once the neighborhoods have been established, each point is evaluated according to the \(\text{MinPts}\) requirement. A point is classified as a core point if its epsilon-neighborhood, including itself, contains at least five points. This is determined using (17).
+          </p>
+
+          <p>
+            Points that do not satisfy the \(\text{MinPts}\) requirement are not immediately classified as noise. They may still become members of a cluster if they are located within the neighborhood of a core point. Such points are classified as border points. A point that is neither assigned to a cluster nor reachable from any core point is ultimately classified as noise.
+          </p>
+
+          <p>
+            The implementation records the core-point status of each point to distinguish between points that can expand a cluster and those that can only be assigned to an existing cluster.
+          </p>
+
+          <h6 class="title is-6">Cluster Formation and Expansion</h6>
+
+          <p>
+            After identifying the core points, the implementation constructs clusters through a queue-based expansion procedure. Each unassigned core point is considered as a starting point for a new cluster. A new cluster identifier is generated, and the starting point is assigned to that cluster.
+          </p>
+
+          <p>
+            The algorithm then places the starting point's neighbors into a queue for exploration. Each retrieved neighbor is checked to determine whether it has already been visited. If it has not been visited, it is marked as visited and assigned to the current cluster if it remains unassigned.
+          </p>
+
+          <p>
+            The expansion process depends on the classification of the retrieved point. If the point is a core point, its neighbors are added to the queue for further exploration. This allows the cluster to expand through points that satisfy the density requirement. Conversely, if the retrieved point is a border point, it is assigned to the current cluster but does not contribute additional neighbors to the expansion process.
+          </p>
+
+          <p>
+            This procedure continues until the queue becomes empty, indicating that no additional density-reachable points can be added to the current cluster. The implementation then proceeds to the next unassigned core point and repeats the process until all core points have been examined.
+          </p>
+
+          <p>
+            After all clusters have been formed, points that remain unassigned are classified as noise. Cluster identifiers are initially assigned starting from zero during processing. For the exported results and visualizations, cluster identifiers are incremented by one so that the clusters are numbered starting from 1, while noise points retain the identifier -1.
+          </p>
+
           <h4 class="title is-4">Evaluation Metrics</h4>
           <p>
-            The clustering results are evaluated using two internal validation
-            metrics: the Silhouette Score and the Davies-Bouldin Index. These
-            metrics assess clustering quality by examining cluster cohesion
-            and separation without requiring ground-truth labels. The following
-            subsections describe their principles, uses, and limitations.
+            The clustering results are evaluated using two internal validation metrics: the Silhouette Score and the Davies-Bouldin Index. These metrics assess clustering quality by examining cluster cohesion and separation without requiring ground-truth labels. The following subsections describe their principles, uses, and limitations.
           </p>
 
           <h5 class="title is-5">Metric 1: Silhouette Score</h5>
           <p>
-            The silhouette score is an internal clustering validation metric
-            that quantifies how well each data point fits its assigned cluster
-            by contrasting within-cluster cohesion against nearest-cluster
-            separation [14]. It ranges from &minus;1 to +1, where values near +1
-            indicate compact, well-separated clusters, values near 0 suggest
-            borderline assignment, and negative values flag potential
-            misclassification [15,17].
+            The silhouette score is an internal clustering validation metric that quantifies how well each data point fits its assigned cluster by contrasting within-cluster cohesion against nearest-cluster separation [14]. It ranges from &minus;1 to +1, where values near +1 indicate compact, well-separated clusters, values near 0 suggest borderline assignment, and negative values flag potential misclassification [15,17].
           </p>
 
           <h6 class="title is-6">Determining Optimal Cluster Number</h6>
           <p>
-            The most widespread use of the silhouette score is selecting the
-            optimal number of clusters (k) in algorithms like K-means, where
-            the highest average silhouette width across candidate k values
-            indicates the best partition [15]. This approach has been applied
-            to customer segmentation [16] and job vacancy corpora [17] to
-            identify the k value yielding the most coherent cluster structure.
+            The most widespread use of the silhouette score is selecting the optimal number of clusters (k) in algorithms like K-means, where the highest average silhouette width across candidate k values indicates the best partition [15]. This approach has been applied to customer segmentation [16] and job vacancy corpora [17] to identify the k value yielding the most coherent cluster structure.
           </p>
 
           <h6 class="title is-6">Comparing Algorithms and Configurations</h6>
           <p>
-            Beyond selecting k, the silhouette score serves as a comparative
-            metric to evaluate different clustering algorithms, distance
-            metrics, and preprocessing choices without requiring ground-truth
-            labels [20].
+            Beyond selecting k, the silhouette score serves as a comparative metric to evaluate different clustering algorithms, distance metrics, and preprocessing choices without requiring ground-truth labels [20].
           </p>
 
           <h6 class="title is-6">Known Limitations</h6>
           <p>
-            Several studies identify conditions under which the silhouette
-            score produces misleading results. The metric assumes roughly
-            isotropic clusters of comparable scale; when cluster diameters
-            differ substantially, silhouette values can be unreliable [17].
-            In network clustering, the score accurately identifies the true
-            community count only when clusters are well separated and balanced,
-            tending to underestimate under strong imbalance or weak separation
-            and to overestimate in sparse networks [18]. The standard
-            micro-averaged silhouette is sensitive to cluster imbalance,
-            whereas the often-overlooked macro-averaged variant is more robust
-            [19].
+            Several studies identify conditions under which the silhouette score produces misleading results. The metric assumes roughly isotropic clusters of comparable scale; when cluster diameters differ substantially, silhouette values can be unreliable [17]. In network clustering, the score accurately identifies the true community count only when clusters are well separated and balanced, tending to underestimate under strong imbalance or weak separation and to overestimate in sparse networks [18]. The standard micro-averaged silhouette is sensitive to cluster imbalance, whereas the often-overlooked macro-averaged variant is more robust [19].
           </p>
 
           <h5 class="title is-5">Metric 2: Davies-Bouldin Index</h5>
           <p>
-            The Davies-Bouldin Index (DBI) is an internal cluster validity
-            measure that evaluates clustering performance by quantifying the
-            ratio of intra-cluster cohesion to inter-cluster separation, where
-            lower values indicate better-defined clusters [20]. It computes
-            the average similarity between each cluster and its most similar
-            counterpart, using cluster centroids and within-cluster dispersion
-            to capture both compactness and separation in a single metric [20].
+            The Davies-Bouldin Index (DBI) is an internal cluster validity measure that evaluates clustering performance by quantifying the ratio of intra-cluster cohesion to inter-cluster separation, where lower values indicate better-defined clusters [20]. It computes the average similarity between each cluster and its most similar counterpart, using cluster centroids and within-cluster dispersion to capture both compactness and separation in a single metric [20].
           </p>
 
           <h6 class="title is-6">Determining Optimal Cluster Number</h6>
           <p>
-            The most common use of DBI is selecting the optimal number of
-            clusters (k) in partitioning algorithms like K-means, where the k
-            value yielding the lowest DBI is considered best [20]. Researchers
-            iterate over candidate k values and choose the partition that
-            minimizes DBI, as a smaller value signals tighter clusters with
-            greater separation between them [7,8].
+            The most common use of DBI is selecting the optimal number of clusters (k) in partitioning algorithms like K-means, where the k value yielding the lowest DBI is considered best [20]. Researchers iterate over candidate k values and choose the partition that minimizes DBI, as a smaller value signals tighter clusters with greater separation between them [7,8].
           </p>
 
           <h6 class="title is-6">Comparing Algorithms and Configurations</h6>
           <p>
-            DBI serves as a benchmark to compare clustering algorithms,
-            distance metrics, and initialization strategies without requiring
-            ground-truth labels [9]. DBI is routinely used to compare different
-            clustering algorithms on the same dataset, because it summarizes
-            within-cluster compactness and between-cluster separation into one
-            minimization criterion [7]. More recent methodological work still
-            describes internal indices such as DBI as standard tools for
-            comparing the goodness of results from different clustering
-            methods [10].
+            DBI serves as a benchmark to compare clustering algorithms, distance metrics, and initialization strategies without requiring ground-truth labels [9]. DBI is routinely used to compare different clustering algorithms on the same dataset, because it summarizes within-cluster compactness and between-cluster separation into one minimization criterion [7]. More recent methodological work still describes internal indices such as DBI as standard tools for comparing the goodness of results from different clustering methods [10].
           </p>
 
           <h6 class="title is-6">Known Limitations</h6>
           <p>
-            DBI's reliability depends on cluster geometry and data distribution.
-            The metric works well for convex-shaped, well-separated clusters
-            but can be misleading for concave, nested, or density-based cluster
-            shapes [24]. It is sensitive to cluster imbalance, non-compact
-            clusters, and high-dimensional data, which can distort the
-            compactness-to-separation ratio [9]. Treating DBI as an objective
-            function for identifying good partitions can promote clusterings
-            that match expert knowledge poorly, suggesting it is better suited
-            for selecting cluster count (k) than for defining optimal
-            partitions [25].
+            DBI's reliability depends on cluster geometry and data distribution. The metric works well for convex-shaped, well-separated clusters but can be misleading for concave, nested, or density-based cluster shapes [24]. It is sensitive to cluster imbalance, non-compact clusters, and high-dimensional data, which can distort the compactness-to-separation ratio [9]. Treating DBI as an objective function for identifying good partitions can promote clusterings that match expert knowledge poorly, suggesting it is better suited for selecting cluster count (k) than for defining optimal partitions [25].
           </p>
+
+          <h5 class="title is-5">Metric Evaluation Plan</h5>
+          <p>
+            This section maps how the Silhouette Score and the Davies-Bouldin Index are utilized throughout the project: first to select hyperparameters, and then to compare the four algorithms.
+          </p>
+
+          <h6 class="title is-6">Hyperparameter Selection: Cluster Count Evaluation</h6>
+          <p>
+            Multi-criteria decision-making (MCDM) provides a framework for evaluating alternatives using multiple criteria, particularly when individual criteria produce conflicting assessments. Cebesoy et al. discuss the challenges of making decisions when no alternative performs best across all evaluation criteria, highlighting the need for systematic approaches to combine different assessments [26]. One approach to addressing this problem is rank aggregation, which combines multiple rankings into a single overall ranking. Viappiani discusses scoring-based rank aggregation methods, including the Borda Count, in which alternatives receive scores based on their positions in individual rankings [27]. The Borda Count is mathematically equivalent to selecting the alternative with the lowest sum of ranks when all rankings contain the same alternatives.
+          </p>
+
+          <p>
+            Applying this approach to clustering evaluation allows configurations to be ranked independently according to the Silhouette Score and the Davies-Bouldin Index, with their respective ranks combined to determine an overall ranking. This provides a straightforward way to consider both evaluation metrics without directly comparing their different numerical scales.
+          </p>
+
+          <p>
+            For this project, the combined rank is defined as:
+          </p>
+
+          <p>
+            \[
+            R_{\text{total}}(i) = R_{\text{silhouette}}(i) + R_{\text{DBI}}(i)
+            \tag{25}
+            \]
+          </p>
+
+          <p>where:</p>
+          <ul>
+            <li>\(R_{\text{silhouette}}(i)\) is the rank of configuration \(i\) based on Silhouette Score (the highest score receives rank 1);</li>
+            <li>\(R_{\text{DBI}}(i)\) is the rank of configuration \(i\) based on Davies-Bouldin Index (the lowest value receives rank 1);</li>
+            <li>\(R_{\text{total}}(i)\) is the combined rank.</li>
+          </ul>
+
+          <p>
+            The configuration with the lowest combined rank is preferred.
+          </p>
+
+          <p>
+            The combined ranking approach is applied to K-means, Hierarchical Clustering, and Gaussian Mixture Models to determine the most suitable hyperparameter configuration for each algorithm. These algorithms produce cluster assignments for all observations, allowing their configurations to be evaluated on the same set of observations through the Silhouette Score and Davies-Bouldin Index. Since these metrics have different numerical scales and optimization directions, converting their results into rankings allows them to be combined without directly comparing their raw values. The sum-of-ranks approach also provides a simple way to balance the two evaluation criteria without introducing additional weighting parameters.
+          </p>
+
+          <p>
+            DBSCAN is evaluated separately because its ability to classify observations as noise can result in different configurations being evaluated on different subsets of the dataset. Its evaluation therefore considers both clustering quality and the proportion of observations classified as noise.
+          </p>
+
+          <p>
+            Table 1 is an illustrative example of the ranking methodology.
+          </p>
+
+          <div style="overflow-x: auto;">
+            <table class="table is-bordered is-striped is-hoverable" style="margin: 0 auto;">
+              <caption><strong>Table 1.</strong> Ranking sample (illustrative values)</caption>
+              <thead>
+                <tr>
+                  <th>k</th>
+                  <th>Silhouette</th>
+                  <th>Silhouette rank</th>
+                  <th>DBI</th>
+                  <th>DBI rank</th>
+                  <th>Combined rank</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>2</td><td>0.98</td><td>1</td><td>0.8</td><td>3</td><td>4</td></tr>
+                <tr><td>3</td><td>0.5</td><td>2</td><td>0.2</td><td>1</td><td><strong>3</strong></td></tr>
+                <tr><td>4</td><td>0.4</td><td>3</td><td>0.5</td><td>2</td><td>5</td></tr>
+                <tr><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td></tr>
+                <tr><td>17</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td></tr>
+              </tbody>
+            </table>
           </div>
-        
+
+          <p>
+            Based on the table, \(k=3\) has the lowest combined rank and is therefore selected as the cluster count.
+          </p>
+
+          <h6 class="title is-6">Algorithm Evaluation</h6>
+          <p>
+            The performance of the four clustering algorithms, namely K-means, Hierarchical Clustering, Gaussian Mixture Models (GMM), and DBSCAN, is evaluated using the Silhouette Score and the Davies-Bouldin Index (DBI). These metrics provide an assessment of clustering quality by measuring the cohesion of observations within their assigned clusters and the separation between different clusters. The Silhouette Score evaluates how closely an observation is grouped with observations in its own cluster compared to those in other clusters, where values closer to 1 indicate well-separated clusters, values around 0 suggest overlapping clusters, and negative values may indicate potential misclassification. In contrast, the Davies-Bouldin Index measures the average similarity between each cluster and its most similar neighboring cluster, with lower values indicating more compact and better-separated clusters.
+          </p>
+          <p>
+            The results from both metrics are considered when comparing the performance of the four algorithms, with higher Silhouette Scores and lower DBI values indicating more favorable clustering results. Any differences or disagreements between the two metrics are also examined to provide a more balanced interpretation of algorithm performance. Through this evaluation, the study aims to identify which algorithm produces better-defined groupings within the Philippine climate dataset based on the selected internal validation metrics.
+          </p>
+        </div>
       </div>
     </div>
     <!--/ Methodology. -->
-    
-    
+
+
     <!-- Results and Discussion. -->
     <div class="columns is-centered">
       <div class="column is-full-width">
         <h2 class="title is-3">Results and Discussion</h2>
-        
         <div class="content has-text-justified">
+          <!-- TODO: The previous content here was leftover NeRF/Nerfies template text
+               (D-NeRF, NR-NeRF, Video-NeRF, etc.) unrelated to this study and was removed. -->
           <p>
-            There's a lot of excellent work that was introduced around the same time as ours.
-          </p>
-          <p>
-            <a href="https://arxiv.org/abs/2104.09125">Progressive Encoding for Neural Optimization</a> introduces an idea similar to our windowed position encoding for coarse-to-fine optimization.
-          </p>
-          <p>
-            <a href="https://www.albertpumarola.com/research/D-NeRF/index.html">D-NeRF</a> and <a href="https://gvv.mpi-inf.mpg.de/projects/nonrigid_nerf/">NR-NeRF</a>
-            both use deformation fields to model non-rigid scenes.
-          </p>
-          <p>
-            Some works model videos with a NeRF by directly modulating the density, such as <a href="https://video-nerf.github.io/">Video-NeRF</a>, <a href="https://www.cs.cornell.edu/~zl548/NSFF/">NSFF</a>, and <a href="https://neural-3d-video.github.io/">DyNeRF</a>
-          </p>
-          <p>
-            There are probably many more by the time you are reading this. Check out <a href="https://dellaert.github.io/NeRF/">Frank Dellart's survey on recent NeRF papers</a>, and <a href="https://github.com/yenchenlin/awesome-NeRF">Yen-Chen Lin's curated list of NeRF papers</a>.
+            Results and discussion will be added here.
           </p>
         </div>
       </div>
     </div>
     <!--/ Results and Discussion. -->
-    
+
   </div>
 </section>
+
 
 <section class="section">
   <div class="container is-max-desktop">
