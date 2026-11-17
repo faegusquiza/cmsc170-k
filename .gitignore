@@ -2,6 +2,7 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
-results/
-processed_data/
-__pycache__/
+methods/__pycache__/
+metrics/__pycache__/
+tests/__pycache__/
+utilities/__pycache__/

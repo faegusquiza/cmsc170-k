@@ -254,7 +254,7 @@ Cluster identifiers in the exported file start at one, while noise retains the v
 The implementation organizes its results by month.
 
 ```text
-results/
+method_results/
 └── dbscan/
     └── monthly/
         ├── JAN/

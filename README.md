@@ -2,12 +2,135 @@
 
 **CMSC 170 Project**
 
-**Researchers:** John Bryan Escobia, Marc Daniel Deang, Fatima Eryn Egusquiza, and Jude Gabriel Padilla
+**Researchers:** Marc Daniel Deang, Fatima Eryn Egusquiza, Fatima Eryn Egusquiza, John Bryan Escobia, and Jude Gabriel Padilla
 
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-black?logo=github)](https://github.com/faegusquiza/cmsc170-k)
 [![Dataset](https://img.shields.io/badge/Data-NASA%20POWER-blue)](https://power.larc.nasa.gov/data-access-viewer/#single-point)
 
----
+
+
+## Project Structure
+
+The repository is organized into directories for source data, processed data, clustering methods, evaluation, tests, and the project website.
+
+```text
+cmsc170-k/
+│
+├── gathered_data/               # source climate data
+├── processed_data/              # monthly climate averages and standardized values
+├── methods/                     # K-means, hierarchical, GMM, and DBSCAN
+├── method_results/              # generated clustering results and visualizations
+├── metrics/                     # Silhouette Score and Davies-Bouldin Index
+├── utilities/                   # data retrieval, preprocessing, and metric readers
+├── tests/                       # automated tests
+├── website/                     # project website
+├── DBSCAN.md                    # DBSCAN documentation
+├── EVALUATION.md                # evaluation documentation
+├── requirements.txt
+└── README.md
+```
+
+
+
+## Installation and Setup
+
+### Prerequisites
+
+- Python 3.10 or later
+- pip
+- Git
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/faegusquiza/cmsc170-k.git
+cd cmsc170-k
+```
+
+### Create a Virtual Environment
+
+**Windows:**
+
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+
+**Linux/macOS:**
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+
+
+## Gathering the Data
+
+Ensure that the required coordinate CSV files are placed inside the `gathered_data/grid_coordinates/` directory.
+
+Run the data retriever script:
+
+```bash
+python -m utilities.data_retriever
+```
+
+The script retrieves the climate data and exports the resulting regional CSV files into the `gathered_data/regions/` directory.
+
+
+
+## Processing the Data
+
+Data needs to pre-processed before running any of the clustering methods.
+
+Run the data reader script:
+
+```bash
+python -m utilities.data_reader
+```
+
+The script processes the gathered data and outputs them to `processed_data/` directory.
+
+-
+
+## Running the Methods
+
+Once all data has been processed, each methods script must be run.
+
+Run the method scripts:
+
+```bash
+python -m methods.kmeans_clustering
+python -m methods.hierarchical_clustering
+python -m methods.gmm
+python -m methods.dbscan_clustering
+```
+
+Each script runs the specified method and outputs its result to `method_results/<method>/monthly/` directory.
+
+
+
+## Evaluating the Methods
+
+After running all of the method completely, evaluating may begin.
+
+Run the metric scripts:
+
+```bash
+python -m metrics.davies_bouldin_index
+python -m metrics.silhouette_score
+```
+
+Each script runs the specified metric evaluation and outputs its result to the corresponding `method_results/<method>/monthly/` directory.
+
+
+<!-- 
 
 ## Table of Contents
 
@@ -25,7 +148,7 @@
 12. [Contributors](#contributors)
 13. [References](#references)
 
----
+
 
 ## Project Overview
 
@@ -55,9 +178,9 @@ The project aims to:
 5. Evaluate clustering quality using the Silhouette Score and Davies-Bouldin Index.
 6. Interpret the resulting climate groupings based on their temperature, rainfall, wind, and solar characteristics.
 
----
 
----
+
+
 
 ## Study Delimitations
 
@@ -69,7 +192,7 @@ Consequently, the resulting clusters should be interpreted as general representa
 
 The study is also limited to the selected climate variables and historical period of 2001–2025.
 
----
+
 
 ## Dataset and Data Sources
 
@@ -82,7 +205,7 @@ NASA POWER provides meteorological and solar-related datasets derived from satel
 **Dataset configuration:**
 
 | Configuration | Selected Setting |
-|---|---|
+|||
 | Data Access Method | Single Point |
 | Data Resolution | Standard Resolution |
 | Temporal Level | Monthly and Annual |
@@ -100,7 +223,7 @@ https://power.larc.nasa.gov/api/temporal/monthly/point
 The study considers four primary climate categories.
 
 | Category | Climate Variable | NASA Parameter | Grid Layer |
-|---|---|---|---|
+|||||
 | Solar | All-Sky Surface Photosynthetically Active Radiation (PAR) Total | To be finalized | Solar |
 | Temperature | Temperature at 2 Meters Minimum | To be finalized | Weather |
 | Rainfall | Precipitation Average | To be finalized | Weather |
@@ -108,7 +231,7 @@ The study considers four primary climate categories.
 
 > **Note:** The parameter codes and exact NASA POWER parameter definitions must be verified against the final API configuration. The current extraction script uses a different set of parameter codes, documented in the Data Gathering section below.
 
----
+
 
 ## Data Gathering
 
@@ -130,7 +253,7 @@ These layers are processed separately because they provide different climate var
 The current Python extraction script uses the following configuration:
 
 | Configuration | Value |
-|---|---|
+|||
 | API Endpoint | NASA POWER Monthly Point API |
 | Start Year | 2001 |
 | End Year | 2025 |
@@ -145,7 +268,7 @@ The current Python extraction script uses the following configuration:
 The MERRA-2 grid layer currently retrieves:
 
 | Parameter Code | Description |
-|---|---|
+|||
 | `T2M` | Temperature at 2 Meters |
 | `PRECTOTCORR` | Corrected Precipitation |
 | `WS10M` | Wind Speed at 10 Meters |
@@ -155,7 +278,7 @@ The MERRA-2 grid layer currently retrieves:
 The SYN1DEG grid layer currently retrieves:
 
 | Parameter Code | Description |
-|---|---|
+|||
 | `ALLSKY_SFC_SW_DWN` | All-Sky Surface Shortwave Downward Irradiance |
 
 ### Input Data
@@ -165,7 +288,7 @@ Geographic grid-point coordinates are stored in separate CSV files for each grid
 Each coordinate CSV contains the following columns:
 
 | Column | Description |
-|---|---|
+|||
 | `region` | Philippine region assigned to the grid point |
 | `latitude` | Latitude coordinate |
 | `longitude` | Longitude coordinate |
@@ -185,9 +308,13 @@ Each row represents one geographic grid point. A region may contain multiple gri
 #### Input Directory
 
 ```text
-grid_coordinates/
-├── merra2_philippine_grid_coordinates.csv
-└── syn1_philippine_grid_coordinates.csv
+gathered_data/
+├── grid_coordinates/
+│   ├── merra2_coordinates_weighted.csv
+│   └── syn1_coordinates_weighted.csv
+└── grid_coordinates_unweighted/
+    ├── merra2_philippine_grid_coordinates.csv
+    └── syn1_philippine_grid_coordinates.csv
 ```
 
 ### Data Extraction Workflow
@@ -269,7 +396,7 @@ regions/
 
 Each output file contains the climate records retrieved from both grid layers, identified through the `GRID_LAYER` column.
 
----
+
 
 ## Clustering Algorithms
 
@@ -340,14 +467,14 @@ Clusters grow by connecting core points and their density-reachable neighbors.
 #### Key Parameters
 
 | Parameter | Description |
-|---|---|
+|||
 | `eps` | Maximum distance between two observations for them to be considered neighbors. |
 | `min_samples` | Minimum number of observations required within an `eps` neighborhood to form a core point. |
 
 #### DBSCAN vs. K-means
 
 | Feature | DBSCAN | K-means |
-|---|---|---|
+||||
 | Cluster Shape | Can identify irregularly shaped clusters | Generally favors spherical or convex clusters |
 | Number of Clusters | Not required beforehand | Must be specified beforehand |
 | Noise and Outliers | Can identify noise points | Sensitive to outliers |
@@ -355,7 +482,7 @@ Clusters grow by connecting core points and their density-reachable neighbors.
 
 Reference: [DBSCAN Clustering - GeeksforGeeks](https://www.geeksforgeeks.org/machine-learning/dbscan-clustering-in-ml-density-based-clustering/)
 
----
+
 
 ## Evaluation Metrics
 
@@ -370,7 +497,7 @@ The Silhouette Score measures how well an observation fits within its assigned c
 Its value ranges from -1 to 1.
 
 | Score | General Interpretation |
-|---|---|
+|||
 | Above 0.71 | Strong cluster structure |
 | 0.51–0.70 | Reasonable cluster structure |
 | 0.26–0.50 | Weak cluster structure |
@@ -414,33 +541,30 @@ For DBSCAN, noise observations and cases where the algorithm identifies only one
 
 Reference for Silhouette interpretation: [NCBI Bookshelf - Interpretation Guidelines](https://www.ncbi.nlm.nih.gov/books/NBK610805/table/ch6.tab5/?report=objectonly)
 
----
+
 
 ## Project Structure
 
-The repository is organized into directories for geographic input data, extracted datasets, source code, and project documentation.
+The repository is organized into directories for source data, processed data, clustering methods, evaluation, tests, and the project website.
 
 ```text
 cmsc170-k/
 │
-├── data_gathering/
-│   ├── grid_coordinates/
-│   │   ├── merra2_philippine_grid_coordinates.csv
-│   │   └── syn1_philippine_grid_coordinates.csv
-│   │
-│   ├── regions/
-│   │   ├── region_1.csv
-│   │   ├── region_2.csv
-│   │   └── ...
-│   │
-│   └── retriever.py             # regional data extractor
+├── gathered_data/              # source climate data
+├── processed_data/              # monthly climate averages and standardized values
+├── methods/                     # K-means, hierarchical, GMM, and DBSCAN
+├── method_results/              # generated clustering results and visualizations
+├── metrics/                     # Silhouette Score and Davies-Bouldin Index
+├── utilities/                   # data retrieval, preprocessing, and metric readers
+├── tests/                       # automated tests
+├── website/                     # project website
+├── DBSCAN.md                    # DBSCAN documentation
+├── EVALUATION.md                # evaluation documentation
 ├── requirements.txt
 └── README.md
 ```
 
-Additional directories may be introduced for preprocessing, clustering implementations, visualizations, and evaluation as development progresses.
 
----
 
 ## Installation and Setup
 
@@ -479,7 +603,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
----
+
 
 ## Running the Project
 
@@ -488,26 +612,26 @@ Ensure that the required coordinate CSV files are placed inside the `grid_coordi
 Run the data-gathering script:
 
 ```bash
-cd data_gathering
-python data_gathering.py
+cd gathered_data
+python gathered_data.py
 ```
 
 The script retrieves the climate data and exports the resulting regional CSV files into the `regions/` directory.
 
 Additional instructions for preprocessing, clustering, and evaluation will be added as those components are implemented.
 
----
+
 
 ## Contributors
 
 | Name | Role |
-|---|---|
+|||
 | John Bryan Escobia | Researcher |
 | Marc Daniel Deang | Researcher |
 | Fatima Eryn Egusquiza | Researcher |
 | Jude Gabriel Padilla | Researcher |
 
----
+
 
 ## References
 
@@ -518,4 +642,4 @@ Additional instructions for preprocessing, clustering, and evaluation will be ad
 - [Gaussian Mixture Models - IBM](https://www.ibm.com/think/topics/gaussian-mixture-model)
 - [DBSCAN Clustering - GeeksforGeeks](https://www.geeksforgeeks.org/machine-learning/dbscan-clustering-in-ml-density-based-clustering/)
 - [Scikit-learn: Silhouette Score](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.silhouette_score.html)
-- [Scikit-learn: Davies-Bouldin Index](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.davies_bouldin_score.html)
+- [Scikit-learn: Davies-Bouldin Index](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.davies_bouldin_score.html) -->

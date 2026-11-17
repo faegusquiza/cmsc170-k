@@ -29,7 +29,7 @@ processed_data/
     FEB/
         ...
 
-results/<method>/monthly/JAN/
+method_results/<method>/monthly/JAN/
     clusters.csv
     ... method-specific summaries, graphs, centroids or merges
 ```
@@ -95,7 +95,7 @@ result = evaluate_davies_bouldin(values, labels)
 print(result)
 
 write_cluster_assignments(
-    "results/kmeans/monthly/JAN",
+    "method_results/kmeans/monthly/JAN",
     regions, labels
 )
 ```
@@ -186,13 +186,13 @@ which method to evaluate. For example:
 Enter method (kmeans, dbscan, hierarchical): hierarchical
 ```
 
-The program selects `results/<method>/monthly` automatically. Capitalization
+The program selects `method_results/<method>/monthly` automatically. Capitalization
 and surrounding spaces are ignored. Invalid choices request another answer.
 There are no folder paths or command-line arguments to configure.
 
 The program reads method labels and shared standardized values for JAN through DEC and writes
 `davies_bouldin_scores.csv` directly in the selected folder. For the example above,
-the result is `results/hierarchical/monthly/davies_bouldin_scores.csv`. It evaluates
+the result is `method_results/hierarchical/monthly/davies_bouldin_scores.csv`. It evaluates
 the saved run, including whatever k and linkage produced those labels; it does
 not retrain the method or assume average linkage.
 
