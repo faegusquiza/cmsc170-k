@@ -1,0 +1,5 @@
+method,k,mean_silhouette,mean_davies_bouldin,silhouette_months,davies_bouldin_months,total_months,mean_noise_fraction,notes
+kmeans,7,0.25403726712078434,0.7481001635739807,12,12,12,0.0,
+hierarchical,5,0.3304284789138097,0.7088753526968562,12,12,12,0.0,
+gaussian,14,0.041559562378641106,0.640926401563799,12,12,12,0.0,
+dbscan,,,,0,0,12,0.05555555555555555,"Blank scores are undefined, not zero. No K selection; interpret separately with noise coverage."

@@ -122,6 +122,46 @@ def save_summary(rows):
         writer.writeheader()
         writer.writerows(rows)
     print(f"Saved {output}. Higher Silhouette and lower DBI are better.")
+    save_final_comparison(rows)
+
+
+def save_final_comparison(rows):
+    """Compare the best-ranked runs, keeping tied choices and DBSCAN separate."""
+    comparison = []
+    for method in ["kmeans", "hierarchical", "gaussian", "dbscan"]:
+        candidates = [row for row in rows if row["method"] == method]
+        if method == "dbscan":
+            selected = candidates
+        else:
+            ranked = [row for row in candidates if row["combined_rank"] is not None]
+            if not ranked:
+                raise ValueError(f"No complete ranked runs available for {method}.")
+            best_rank = min(row["combined_rank"] for row in ranked)
+            selected = [row for row in ranked if row["combined_rank"] == best_rank]
+        for row in selected:
+            notes = []
+            if method != "dbscan" and len(selected) > 1:
+                notes.append("Tied for lowest combined rank; K requires review.")
+            if row["mean_silhouette"] is None or row["mean_davies_bouldin"] is None:
+                notes.append("Blank scores are undefined, not zero.")
+            if method == "dbscan":
+                notes.append("No K selection; interpret separately with noise coverage.")
+            comparison.append({
+                "method": method, "k": row["k"],
+                "mean_silhouette": row["mean_silhouette"],
+                "mean_davies_bouldin": row["mean_davies_bouldin"],
+                "silhouette_months": row["silhouette_months"],
+                "davies_bouldin_months": row["davies_bouldin_months"],
+                "total_months": row["total_months"],
+                "mean_noise_fraction": row["mean_noise_fraction"],
+                "notes": " ".join(notes),
+            })
+    output = Path("metric_results") / "final_comparison.csv"
+    with output.open("w", newline="", encoding="utf-8") as stream:
+        writer = csv.DictWriter(stream, fieldnames=list(comparison[0].keys()))
+        writer.writeheader()
+        writer.writerows(comparison)
+    print(f"Saved {output}.")
 
 
 def run_kmeans(regions, monthly_values):
