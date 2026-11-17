@@ -1,0 +1,9 @@
+APR (2001-2025): Gaussian Mixture Model Clustering
+k = 5
+Initial centroids: NCR, REGION 8, REGION 9, REGION 1, REGION 2
+Iterations: 8
+Cluster 1: NCR, REGION 1, REGION 4-A
+Cluster 2: REGION 13, REGION 5, REGION 8
+Cluster 3: BARMM, REGION 11, REGION 9
+Cluster 4: CAR, MIMAROPA, REGION 3
+Cluster 5: NIR, REGION 10, REGION 12, REGION 2, REGION 6, REGION 7

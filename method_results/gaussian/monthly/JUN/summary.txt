@@ -1,0 +1,9 @@
+JUN (2001-2025): Gaussian Mixture Model Clustering
+k = 5
+Initial centroids: REGION 4-A, REGION 3, REGION 11, REGION 6, REGION 1
+Iterations: 7
+Cluster 1: NCR, REGION 2, REGION 4-A, REGION 5, REGION 7, REGION 8
+Cluster 2: REGION 3
+Cluster 3: BARMM, REGION 10, REGION 11, REGION 12, REGION 13, REGION 9
+Cluster 4: MIMAROPA, NIR, REGION 6
+Cluster 5: CAR, REGION 1

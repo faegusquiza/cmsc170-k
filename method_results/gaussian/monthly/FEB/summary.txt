@@ -1,0 +1,9 @@
+FEB (2001-2025): Gaussian Mixture Model Clustering
+k = 5
+Initial centroids: REGION 5, REGION 11, MIMAROPA, NCR, REGION 9
+Iterations: 8
+Cluster 1: NIR, REGION 5, REGION 8
+Cluster 2: REGION 11, REGION 13, REGION 3, REGION 4-A
+Cluster 3: MIMAROPA, REGION 1, REGION 6, REGION 7
+Cluster 4: CAR, NCR, REGION 10, REGION 2
+Cluster 5: BARMM, REGION 12, REGION 9

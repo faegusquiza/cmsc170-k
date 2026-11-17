@@ -1,0 +1,9 @@
+DEC (2001-2025): Gaussian Mixture Model Clustering
+k = 5
+Initial centroids: MIMAROPA, REGION 10, REGION 13, REGION 5, REGION 11
+Iterations: 7
+Cluster 1: MIMAROPA, NIR, REGION 1, REGION 3, REGION 6, REGION 7
+Cluster 2: BARMM, CAR, REGION 10, REGION 12
+Cluster 3: NCR, REGION 13
+Cluster 4: REGION 4-A, REGION 5, REGION 8
+Cluster 5: REGION 11, REGION 2, REGION 9
