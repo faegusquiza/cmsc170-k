@@ -97,71 +97,70 @@ def save_metric_results(method, k, month_results):
         "total_months": len(month_results),
         "mean_noise_fraction": sum(result["silhouette"]["noise_fraction"]
                                    for result in month_results.values()) / len(month_results),
+        "month_results": month_results,
     }
 
 
 def save_summary(rows):
-    """Save run means and Table 1's sum of ranks separately for each method."""
+    """Choose one k per method from mean scores and write monthly results."""
+    methods = [("kmeans", "K-means"), ("hierarchical", "Hierarchical"), ("gaussian", "GMM")]
+    selected_runs = {}
     for row in rows:
-        row.update(silhouette_rank=None, dbi_rank=None, combined_rank=None)
-    for method in ["kmeans", "hierarchical", "gaussian"]:
-        # Compare complete runs only, using the same twelve months for both metrics.
-        candidates = [row for row in rows if row["method"] == method
+        row["silhouette_rank"] = None
+        row["dbi_rank"] = None
+        row["combined_rank"] = None
+
+    for method, label in methods:
+        candidates = [row for row in rows
+                      if row["method"] == method
                       and row["silhouette_months"] == len(MONTHS)
                       and row["davies_bouldin_months"] == len(MONTHS)]
+        if not candidates:
+            raise ValueError(f"No complete scores available for {label}.")
+
         for row in candidates:
-            # Equal scores share a rank; no extra tie-breaking rule is imposed.
-            row["silhouette_rank"] = 1 + sum(other["mean_silhouette"] > row["mean_silhouette"]
-                                             for other in candidates)
-            row["dbi_rank"] = 1 + sum(other["mean_davies_bouldin"] < row["mean_davies_bouldin"]
-                                     for other in candidates)
+            row["silhouette_rank"] = 1 + sum(
+                other["mean_silhouette"] > row["mean_silhouette"] for other in candidates
+            )
+            row["dbi_rank"] = 1 + sum(
+                other["mean_davies_bouldin"] < row["mean_davies_bouldin"] for other in candidates
+            )
             row["combined_rank"] = row["silhouette_rank"] + row["dbi_rank"]
+
+        # Break rank ties by the two mean scores, then choose the smaller k
+        selected_runs[method] = min(candidates, key=lambda row: (
+            row["combined_rank"], -row["mean_silhouette"],
+            row["mean_davies_bouldin"], row["k"]
+        ))
+
+    ranking_columns = [
+        "method", "k", "mean_silhouette", "mean_davies_bouldin",
+        "silhouette_months", "davies_bouldin_months", "total_months",
+        "mean_noise_fraction", "silhouette_rank", "dbi_rank", "combined_rank",
+    ]
+    ranking_output = Path("metric_results") / "k_ranking.csv"
+    with ranking_output.open("w", newline="", encoding="utf-8") as stream:
+        writer = csv.DictWriter(stream, fieldnames=ranking_columns)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({column: row.get(column) for column in ranking_columns})
+
+    columns = ["Month", "K-means Silhouette", "K-means DBI", "Hierarchical Silhouette", "Hierarchical DBI", "GMM Silhouette", "GMM DBI"]
+    summary_rows = []
+    for month in MONTHS:
+        result = {"Month": month}
+        for method, label in methods:
+            month_scores = selected_runs[method]["month_results"][month]
+            result[f"{label} Silhouette"] = month_scores["silhouette"]["silhouette"]
+            result[f"{label} DBI"] = month_scores["davies_bouldin"]["davies_bouldin"]
+        summary_rows.append(result)
+
     output = Path("metric_results") / "summary.csv"
     with output.open("w", newline="", encoding="utf-8") as stream:
-        writer = csv.DictWriter(stream, fieldnames=list(rows[0].keys()))
+        writer = csv.DictWriter(stream, fieldnames=columns)
         writer.writeheader()
-        writer.writerows(rows)
-    print(f"Saved {output}. Higher Silhouette and lower DBI are better.")
-    save_final_comparison(rows)
-
-
-def save_final_comparison(rows):
-    """Compare the best-ranked runs, keeping tied choices and DBSCAN separate."""
-    comparison = []
-    for method in ["kmeans", "hierarchical", "gaussian", "dbscan"]:
-        candidates = [row for row in rows if row["method"] == method]
-        if method == "dbscan":
-            selected = candidates
-        else:
-            ranked = [row for row in candidates if row["combined_rank"] is not None]
-            if not ranked:
-                raise ValueError(f"No complete ranked runs available for {method}.")
-            best_rank = min(row["combined_rank"] for row in ranked)
-            selected = [row for row in ranked if row["combined_rank"] == best_rank]
-        for row in selected:
-            notes = []
-            if method != "dbscan" and len(selected) > 1:
-                notes.append("Tied for lowest combined rank; K requires review.")
-            if row["mean_silhouette"] is None or row["mean_davies_bouldin"] is None:
-                notes.append("Blank scores are undefined, not zero.")
-            if method == "dbscan":
-                notes.append("No K selection; interpret separately with noise coverage.")
-            comparison.append({
-                "method": method, "k": row["k"],
-                "mean_silhouette": row["mean_silhouette"],
-                "mean_davies_bouldin": row["mean_davies_bouldin"],
-                "silhouette_months": row["silhouette_months"],
-                "davies_bouldin_months": row["davies_bouldin_months"],
-                "total_months": row["total_months"],
-                "mean_noise_fraction": row["mean_noise_fraction"],
-                "notes": " ".join(notes),
-            })
-    output = Path("metric_results") / "final_comparison.csv"
-    with output.open("w", newline="", encoding="utf-8") as stream:
-        writer = csv.DictWriter(stream, fieldnames=list(comparison[0].keys()))
-        writer.writeheader()
-        writer.writerows(comparison)
-    print(f"Saved {output}.")
+        writer.writerows(summary_rows)
+    print(f"Saved {output} and {ranking_output}.")
 
 
 def run_kmeans(regions, monthly_values):
@@ -206,8 +205,6 @@ def run_gmm(regions, monthly_values):
         month_results = {}
         for month in MONTHS:
             random.seed(RANDOM_SEED + k)
-            # The existing GMM method expects a NumPy array as its input.
-            # Use the NumPy module it already imports; main.py does not import it.
             values = gmm.np.array(monthly_values[month])
             labels, _, _, _, _ = gmm.gaussian_clusters(
                 values, distros=k, dims=len(values[0]), err_tolerance=DEFAULT_GMM_TOLERANCE
@@ -241,6 +238,7 @@ def run_dbscan(regions, monthly_values):
         labels = [point.cluster for point in points]
         save_assignments("dbscan", None, month, regions, labels)
         month_results[month] = evaluate_month(values, labels)
+        month_results[month]["epsilon"] = epsilon
         silhouette = month_results[month]["silhouette"]["silhouette"]
         dbi = month_results[month]["davies_bouldin"]["davies_bouldin"]
         if silhouette is None:
@@ -274,7 +272,7 @@ def print_summary(method, k, summary):
     )
 
 def main():
-    """Run the complete evaluation from the terminal."""
+    """Run the methods and metrics, then write the monthly summary table."""
     try:
         regions, monthly_values, _, _ = load_shared_data()
         print(f"Loaded {len(regions)} regions across {len(MONTHS)} monthly datasets.")
