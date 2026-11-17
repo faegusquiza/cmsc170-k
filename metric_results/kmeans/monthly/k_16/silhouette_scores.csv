@@ -1,0 +1,13 @@
+method,month,silhouette,silhouette_macro,interpretation,status,reason,n_total,n_evaluated,n_clusters,n_noise,noise_fraction,standardized_file
+kmeans,JAN,0.031157662398852218,0.01752618509935437,no substantial structure,ok,,18,18,16,0,0.0,processed_data/JAN/standardized_values.csv
+kmeans,FEB,-0.02706342793724222,-0.015223178214698749,no substantial structure,ok,,18,18,16,0,0.0,processed_data/FEB/standardized_values.csv
+kmeans,MAR,-0.024240025339366394,-0.009090009502262398,no substantial structure,ok,,18,18,16,0,0.0,processed_data/MAR/standardized_values.csv
+kmeans,APR,0.060667884629112975,0.034125685103876056,no substantial structure,ok,,18,18,16,0,0.0,processed_data/APR/standardized_values.csv
+kmeans,MAY,0.009094539335848278,0.005115678376414658,no substantial structure,ok,,18,18,16,0,0.0,processed_data/MAY/standardized_values.csv
+kmeans,JUN,0.041439807561834976,0.023309891753532173,no substantial structure,ok,,18,18,16,0,0.0,processed_data/JUN/standardized_values.csv
+kmeans,JUL,0.0011643143443195478,0.0006549268186797456,no substantial structure,ok,,18,18,16,0,0.0,processed_data/JUL/standardized_values.csv
+kmeans,AUG,-0.023091829193384508,-0.012989153921278786,no substantial structure,ok,,18,18,16,0,0.0,processed_data/AUG/standardized_values.csv
+kmeans,SEP,-0.03922177058314533,-0.022062245953019248,no substantial structure,ok,,18,18,16,0,0.0,processed_data/SEP/standardized_values.csv
+kmeans,OCT,-0.004145129598035425,-0.0023316353988949265,no substantial structure,ok,,18,18,16,0,0.0,processed_data/OCT/standardized_values.csv
+kmeans,NOV,-0.007310048569513537,-0.004111902320351364,no substantial structure,ok,,18,18,16,0,0.0,processed_data/NOV/standardized_values.csv
+kmeans,DEC,0.019862469100990616,0.011172638869307226,no substantial structure,ok,,18,18,16,0,0.0,processed_data/DEC/standardized_values.csv

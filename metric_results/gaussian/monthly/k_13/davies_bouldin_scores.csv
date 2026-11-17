@@ -1,0 +1,13 @@
+method,month,davies_bouldin,status,reason,n_total,n_evaluated,n_clusters,n_noise,noise_fraction,standardized_file
+gaussian,JAN,0.863641083437603,ok,,18,18,13,0,0.0,processed_data/JAN/standardized_values.csv
+gaussian,FEB,0.8334023559329066,ok,,18,18,12,0,0.0,processed_data/FEB/standardized_values.csv
+gaussian,MAR,0.8530746906665514,ok,,18,18,12,0,0.0,processed_data/MAR/standardized_values.csv
+gaussian,APR,0.6861950637786781,ok,,18,18,13,0,0.0,processed_data/APR/standardized_values.csv
+gaussian,MAY,0.797292331219643,ok,,18,18,12,0,0.0,processed_data/MAY/standardized_values.csv
+gaussian,JUN,0.48294986242546484,ok,,18,18,11,0,0.0,processed_data/JUN/standardized_values.csv
+gaussian,JUL,0.5926892907659791,ok,,18,18,12,0,0.0,processed_data/JUL/standardized_values.csv
+gaussian,AUG,0.6599379473778779,ok,,18,18,13,0,0.0,processed_data/AUG/standardized_values.csv
+gaussian,SEP,0.7037072870287743,ok,,18,18,11,0,0.0,processed_data/SEP/standardized_values.csv
+gaussian,OCT,0.7824735528133763,ok,,18,18,13,0,0.0,processed_data/OCT/standardized_values.csv
+gaussian,NOV,0.4660134404505225,ok,,18,18,12,0,0.0,processed_data/NOV/standardized_values.csv
+gaussian,DEC,0.6971255147844572,ok,,18,18,12,0,0.0,processed_data/DEC/standardized_values.csv

@@ -1,0 +1,13 @@
+method,month,silhouette,silhouette_macro,interpretation,status,reason,n_total,n_evaluated,n_clusters,n_noise,noise_fraction,standardized_file
+dbscan,JAN,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,15,1,3,0.16666666666666666,processed_data/JAN/standardized_values.csv
+dbscan,FEB,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,17,1,1,0.05555555555555555,processed_data/FEB/standardized_values.csv
+dbscan,MAR,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,16,1,2,0.1111111111111111,processed_data/MAR/standardized_values.csv
+dbscan,APR,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/APR/standardized_values.csv
+dbscan,MAY,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/MAY/standardized_values.csv
+dbscan,JUN,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,16,1,2,0.1111111111111111,processed_data/JUN/standardized_values.csv
+dbscan,JUL,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,16,1,2,0.1111111111111111,processed_data/JUL/standardized_values.csv
+dbscan,AUG,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/AUG/standardized_values.csv
+dbscan,SEP,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,16,1,2,0.1111111111111111,processed_data/SEP/standardized_values.csv
+dbscan,OCT,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/OCT/standardized_values.csv
+dbscan,NOV,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/NOV/standardized_values.csv
+dbscan,DEC,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/DEC/standardized_values.csv

@@ -1,0 +1,13 @@
+method,month,silhouette,silhouette_macro,interpretation,status,reason,n_total,n_evaluated,n_clusters,n_noise,noise_fraction,standardized_file
+gaussian,JAN,0.1698676683953455,0.2044857070020758,no substantial structure,ok,,18,18,3,0,0.0,processed_data/JAN/standardized_values.csv
+gaussian,FEB,-0.02044230362951954,-0.023018208411304905,no substantial structure,ok,,18,18,3,0,0.0,processed_data/FEB/standardized_values.csv
+gaussian,MAR,0.06549317219337539,0.0816760459419421,no substantial structure,ok,,18,18,3,0,0.0,processed_data/MAR/standardized_values.csv
+gaussian,APR,0.13056390343290725,0.1616308702778524,no substantial structure,ok,,18,18,3,0,0.0,processed_data/APR/standardized_values.csv
+gaussian,MAY,0.27588732166433005,0.2720404472517879,weak,ok,,18,18,3,0,0.0,processed_data/MAY/standardized_values.csv
+gaussian,JUN,0.2269451817914181,0.2552642725232804,no substantial structure,ok,,18,18,3,0,0.0,processed_data/JUN/standardized_values.csv
+gaussian,JUL,0.21785857990412724,0.24872387735352888,no substantial structure,ok,,18,18,3,0,0.0,processed_data/JUL/standardized_values.csv
+gaussian,AUG,0.18965393565244992,0.199064493117996,no substantial structure,ok,,18,18,3,0,0.0,processed_data/AUG/standardized_values.csv
+gaussian,SEP,0.15704092271430664,0.18740858111987246,no substantial structure,ok,,18,18,3,0,0.0,processed_data/SEP/standardized_values.csv
+gaussian,OCT,0.13925411872617344,0.1793559144072782,no substantial structure,ok,,18,18,3,0,0.0,processed_data/OCT/standardized_values.csv
+gaussian,NOV,0.21733139535857005,0.2527970667809023,no substantial structure,ok,,18,18,3,0,0.0,processed_data/NOV/standardized_values.csv
+gaussian,DEC,0.22549671617241962,0.24632346288271176,no substantial structure,ok,,18,18,3,0,0.0,processed_data/DEC/standardized_values.csv

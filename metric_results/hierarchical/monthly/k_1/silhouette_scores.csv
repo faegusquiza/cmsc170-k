@@ -1,0 +1,13 @@
+method,month,silhouette,silhouette_macro,interpretation,status,reason,n_total,n_evaluated,n_clusters,n_noise,noise_fraction,standardized_file
+hierarchical,JAN,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/JAN/standardized_values.csv
+hierarchical,FEB,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/FEB/standardized_values.csv
+hierarchical,MAR,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/MAR/standardized_values.csv
+hierarchical,APR,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/APR/standardized_values.csv
+hierarchical,MAY,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/MAY/standardized_values.csv
+hierarchical,JUN,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/JUN/standardized_values.csv
+hierarchical,JUL,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/JUL/standardized_values.csv
+hierarchical,AUG,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/AUG/standardized_values.csv
+hierarchical,SEP,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/SEP/standardized_values.csv
+hierarchical,OCT,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/OCT/standardized_values.csv
+hierarchical,NOV,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/NOV/standardized_values.csv
+hierarchical,DEC,,,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/DEC/standardized_values.csv

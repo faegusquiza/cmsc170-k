@@ -1,0 +1,13 @@
+method,month,davies_bouldin,status,reason,n_total,n_evaluated,n_clusters,n_noise,noise_fraction,standardized_file
+kmeans,JAN,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/JAN/standardized_values.csv
+kmeans,FEB,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/FEB/standardized_values.csv
+kmeans,MAR,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/MAR/standardized_values.csv
+kmeans,APR,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/APR/standardized_values.csv
+kmeans,MAY,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/MAY/standardized_values.csv
+kmeans,JUN,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/JUN/standardized_values.csv
+kmeans,JUL,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/JUL/standardized_values.csv
+kmeans,AUG,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/AUG/standardized_values.csv
+kmeans,SEP,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/SEP/standardized_values.csv
+kmeans,OCT,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/OCT/standardized_values.csv
+kmeans,NOV,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/NOV/standardized_values.csv
+kmeans,DEC,,undefined,Scoring requires 2 <= non-noise clusters < non-noise regions.,18,18,1,0,0.0,processed_data/DEC/standardized_values.csv

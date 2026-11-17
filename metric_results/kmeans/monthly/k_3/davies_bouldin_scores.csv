@@ -1,0 +1,13 @@
+method,month,davies_bouldin,status,reason,n_total,n_evaluated,n_clusters,n_noise,noise_fraction,standardized_file
+kmeans,JAN,0.9686454993278866,ok,,18,18,3,0,0.0,processed_data/JAN/standardized_values.csv
+kmeans,FEB,0.9443876207305628,ok,,18,18,3,0,0.0,processed_data/FEB/standardized_values.csv
+kmeans,MAR,0.8440926999882076,ok,,18,18,3,0,0.0,processed_data/MAR/standardized_values.csv
+kmeans,APR,1.2253321435002416,ok,,18,18,3,0,0.0,processed_data/APR/standardized_values.csv
+kmeans,MAY,0.8979050570419753,ok,,18,18,3,0,0.0,processed_data/MAY/standardized_values.csv
+kmeans,JUN,1.1240388204530587,ok,,18,18,3,0,0.0,processed_data/JUN/standardized_values.csv
+kmeans,JUL,1.0436739200274998,ok,,18,18,3,0,0.0,processed_data/JUL/standardized_values.csv
+kmeans,AUG,0.9602523294594199,ok,,18,18,3,0,0.0,processed_data/AUG/standardized_values.csv
+kmeans,SEP,0.9273006645528846,ok,,18,18,3,0,0.0,processed_data/SEP/standardized_values.csv
+kmeans,OCT,1.0139663503457472,ok,,18,18,3,0,0.0,processed_data/OCT/standardized_values.csv
+kmeans,NOV,0.9193877065748812,ok,,18,18,3,0,0.0,processed_data/NOV/standardized_values.csv
+kmeans,DEC,0.9737212832506889,ok,,18,18,3,0,0.0,processed_data/DEC/standardized_values.csv

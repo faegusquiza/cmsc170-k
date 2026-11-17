@@ -1,0 +1,13 @@
+method,month,silhouette,silhouette_macro,interpretation,status,reason,n_total,n_evaluated,n_clusters,n_noise,noise_fraction,standardized_file
+hierarchical,JAN,0.24806481568471284,0.1689339144775252,no substantial structure,ok,,18,18,8,0,0.0,processed_data/JAN/standardized_values.csv
+hierarchical,FEB,0.33979540390573504,0.2530376351442135,weak,ok,,18,18,8,0,0.0,processed_data/FEB/standardized_values.csv
+hierarchical,MAR,0.28213356719493454,0.2083561786853696,weak,ok,,18,18,8,0,0.0,processed_data/MAR/standardized_values.csv
+hierarchical,APR,0.27741656642188656,0.20751247341246204,weak,ok,,18,18,8,0,0.0,processed_data/APR/standardized_values.csv
+hierarchical,MAY,0.23530211253756267,0.11985554836158152,no substantial structure,ok,,18,18,8,0,0.0,processed_data/MAY/standardized_values.csv
+hierarchical,JUN,0.33186153026350684,0.273280781463442,weak,ok,,18,18,8,0,0.0,processed_data/JUN/standardized_values.csv
+hierarchical,JUL,0.325542397853668,0.25674791341787295,weak,ok,,18,18,8,0,0.0,processed_data/JUL/standardized_values.csv
+hierarchical,AUG,0.2700315277980985,0.19953136355943957,weak,ok,,18,18,8,0,0.0,processed_data/AUG/standardized_values.csv
+hierarchical,SEP,0.29344050645867875,0.23884152704504044,weak,ok,,18,18,8,0,0.0,processed_data/SEP/standardized_values.csv
+hierarchical,OCT,0.210074414735145,0.15812346465087884,no substantial structure,ok,,18,18,8,0,0.0,processed_data/OCT/standardized_values.csv
+hierarchical,NOV,0.34508298286873756,0.24574976545249422,weak,ok,,18,18,8,0,0.0,processed_data/NOV/standardized_values.csv
+hierarchical,DEC,0.33866929627586306,0.24637602133410386,weak,ok,,18,18,8,0,0.0,processed_data/DEC/standardized_values.csv
