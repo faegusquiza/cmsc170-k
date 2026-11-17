@@ -959,88 +959,88 @@
           <h3 class="title is-4">1. Hyperparameter Selection</h3>
 
           <p>
-          The tables below show the candidate metrics for January only. For the final configuration, each candidate was evaluated over all twelve monthly datasets; the twelve-month mean Silhouette and DBI values were ranked, and the two ranks were summed. Silhouette ranks were assigned in descending order, whereas Davies–Bouldin Index (DBI) ranks were assigned in ascending order. The combined rank was calculated as
+          Each candidate was evaluated over the twelve monthly datasets. Silhouette ranks were assigned in descending order, whereas Davies–Bouldin Index (DBI) ranks were assigned in ascending order. The combined rank was calculated as
           \(R_{\text{total}}=R_{\text{silhouette}}+R_{\text{DBI}}\).
-          The final configuration was selected using the lowest combined rank based on these twelve-month means. Candidates with one or 18 clusters were not scoreable because the evaluator requires at least two clusters and fewer clusters than observations.
+          Candidates with one or 18 clusters were not scoreable because the evaluator requires at least two clusters and fewer clusters than observations.
           </p>
 
           <h4 class="title is-5">K-means</h4>
           <table class="table is-bordered is-striped">
-          <thead><tr><th>k</th><th>January Silhouette</th><th>January Silhouette Rank</th><th>January DBI</th><th>January DBI Rank</th><th>January Combined Rank</th></tr></thead>
+          <thead><tr><th>k</th><th>Mean Silhouette</th><th>Silhouette Rank</th><th>Mean DBI</th><th>DBI Rank</th><th>Combined Rank</th></tr></thead>
           <tbody>
-          <tr><td>2</td><td>0.296908</td><td>2</td><td>0.880248</td><td>14</td><td>16</td></tr>
-          <tr><td>3</td><td>0.304591</td><td>1</td><td>0.968645</td><td>16</td><td>17</td></tr>
-          <tr><td>4</td><td>0.286243</td><td>3</td><td>0.896300</td><td>15</td><td>18</td></tr>
-          <tr><td>5</td><td>0.253225</td><td>4</td><td>0.862683</td><td>13</td><td>17</td></tr>
-          <tr><td>6</td><td>0.186053</td><td>9</td><td>0.640844</td><td>8</td><td>17</td></tr>
-          <tr><td>7</td><td>0.237211</td><td>5</td><td>0.740501</td><td>12</td><td>17</td></tr>
-          <tr><td>8</td><td>0.232080</td><td>6</td><td>0.695132</td><td>10</td><td>16</td></tr>
-          <tr><td>9</td><td>0.202813</td><td>7</td><td>0.691370</td><td>9</td><td>16</td></tr>
-          <tr><td>10</td><td>0.165009</td><td>10</td><td>0.697592</td><td>11</td><td>21</td></tr>
-          <tr><td><strong>11</strong></td><td>0.195496</td><td>8</td><td>0.516091</td><td>6</td><td><strong>14</strong></td></tr>
-          <tr><td>12</td><td>0.116790</td><td>11</td><td>0.572650</td><td>7</td><td>18</td></tr>
-          <tr><td>13</td><td>0.067192</td><td>13</td><td>0.453663</td><td>4</td><td>17</td></tr>
-          <tr><td>14</td><td>0.035124</td><td>14</td><td>0.458105</td><td>5</td><td>19</td></tr>
-          <tr><td>15</td><td>0.075791</td><td>12</td><td>0.403049</td><td>3</td><td>15</td></tr>
-          <tr><td>16</td><td>0.031158</td><td>15</td><td>0.341010</td><td>2</td><td>17</td></tr>
-          <tr><td>17</td><td>-0.016501</td><td>16</td><td>0.325405</td><td>1</td><td>17</td></tr>
+          <tr><td>2</td><td>0.312810</td><td>1</td><td>1.164936</td><td>16</td><td>17</td></tr>
+          <tr><td>3</td><td>0.307236</td><td>2</td><td>0.986892</td><td>15</td><td>17</td></tr>
+          <tr><td>4</td><td>0.238310</td><td>4</td><td>0.959069</td><td>13</td><td>17</td></tr>
+          <tr><td>5</td><td>0.233779</td><td>5</td><td>0.980065</td><td>14</td><td>19</td></tr>
+          <tr><td>6</td><td>0.224116</td><td>6</td><td>0.778658</td><td>12</td><td>18</td></tr>
+          <tr><td><strong>7</strong></td><td><strong>0.254037</strong></td><td><strong>3</strong></td><td><strong>0.748100</strong></td><td><strong>11</strong></td><td><strong>14</strong></td></tr>
+          <tr><td>8</td><td>0.222836</td><td>7</td><td>0.716185</td><td>9</td><td>16</td></tr>
+          <tr><td>9</td><td>0.158160</td><td>9</td><td>0.734436</td><td>10</td><td>19</td></tr>
+          <tr><td>10</td><td>0.168936</td><td>8</td><td>0.640483</td><td>8</td><td>16</td></tr>
+          <tr><td>11</td><td>0.130215</td><td>10</td><td>0.575627</td><td>7</td><td>17</td></tr>
+          <tr><td>12</td><td>0.063289</td><td>13</td><td>0.561377</td><td>6</td><td>19</td></tr>
+          <tr><td>13</td><td>0.090301</td><td>11</td><td>0.481587</td><td>5</td><td>16</td></tr>
+          <tr><td>14</td><td>0.089690</td><td>12</td><td>0.415727</td><td>3</td><td>15</td></tr>
+          <tr><td>15</td><td>0.059896</td><td>14</td><td>0.358684</td><td>2</td><td>16</td></tr>
+          <tr><td>16</td><td>0.003193</td><td>16</td><td>0.418088</td><td>4</td><td>20</td></tr>
+          <tr><td>17</td><td>0.005631</td><td>15</td><td>0.293723</td><td>1</td><td>16</td></tr>
           </tbody>
           </table>
           <p>
-          The selected K-means configuration was \(k=7\), which obtained the lowest twelve-month mean combined rank of 14. The January-only table is shown for illustration and does not replace the twelve-month selection basis.
+          The selected K-means configuration was \(k=7\), which obtained the lowest combined rank of 14.
           </p>
 
           <h4 class="title is-5">Hierarchical Clustering</h4>
           <table class="table is-bordered is-striped">
-          <thead><tr><th>k</th><th>January Silhouette</th><th>January Silhouette Rank</th><th>January DBI</th><th>January DBI Rank</th><th>January Combined Rank</th></tr></thead>
+          <thead><tr><th>k</th><th>Mean Silhouette</th><th>Silhouette Rank</th><th>Mean DBI</th><th>DBI Rank</th><th>Combined Rank</th></tr></thead>
           <tbody>
-          <tr><td>2</td><td>0.320444</td><td>1</td><td>1.024370</td><td>16</td><td>17</td></tr>
-          <tr><td>3</td><td>0.301278</td><td>4</td><td>0.913877</td><td>15</td><td>19</td></tr>
-          <tr><td>4</td><td>0.257051</td><td>6</td><td>0.679287</td><td>12</td><td>18</td></tr>
-          <tr><td><strong>5</strong></td><td>0.307323</td><td>3</td><td>0.745944</td><td>13</td><td><strong>16</strong></td></tr>
-          <tr><td>6</td><td>0.307854</td><td>2</td><td>0.770467</td><td>14</td><td><strong>16</strong></td></tr>
-          <tr><td>7</td><td>0.273446</td><td>5</td><td>0.650662</td><td>11</td><td><strong>16</strong></td></tr>
-          <tr><td>8</td><td>0.248065</td><td>7</td><td>0.600664</td><td>10</td><td>17</td></tr>
-          <tr><td>9</td><td>0.242679</td><td>8</td><td>0.529361</td><td>9</td><td>17</td></tr>
-          <tr><td>10</td><td>0.205781</td><td>11</td><td>0.447473</td><td>8</td><td>19</td></tr>
-          <tr><td>11</td><td>0.240028</td><td>9</td><td>0.413370</td><td>7</td><td><strong>16</strong></td></tr>
-          <tr><td>12</td><td>0.237117</td><td>10</td><td>0.389555</td><td>6</td><td><strong>16</strong></td></tr>
-          <tr><td>13</td><td>0.188943</td><td>12</td><td>0.345901</td><td>5</td><td>17</td></tr>
-          <tr><td>14</td><td>0.156845</td><td>13</td><td>0.296714</td><td>4</td><td>17</td></tr>
-          <tr><td>15</td><td>0.129542</td><td>14</td><td>0.206213</td><td>3</td><td>17</td></tr>
-          <tr><td>16</td><td>0.118498</td><td>15</td><td>0.150233</td><td>2</td><td>17</td></tr>
-          <tr><td>17</td><td>0.070974</td><td>16</td><td>0.103588</td><td>1</td><td>17</td></tr>
+          <tr><td>2</td><td>0.328671</td><td>4</td><td>0.918713</td><td>16</td><td>20</td></tr>
+          <tr><td>3</td><td>0.341427</td><td>1</td><td>0.880397</td><td>15</td><td>16</td></tr>
+          <tr><td>4</td><td>0.329811</td><td>3</td><td>0.769549</td><td>14</td><td>17</td></tr>
+          <tr><td><strong>5</strong></td><td><strong>0.330428</strong></td><td><strong>2</strong></td><td><strong>0.708875</strong></td><td><strong>13</strong></td><td><strong>15</strong></td></tr>
+          <tr><td>6</td><td>0.313874</td><td>5</td><td>0.670377</td><td>12</td><td>17</td></tr>
+          <tr><td>7</td><td>0.305264</td><td>6</td><td>0.630031</td><td>11</td><td>17</td></tr>
+          <tr><td>8</td><td>0.291452</td><td>7</td><td>0.576765</td><td>10</td><td>17</td></tr>
+          <tr><td>9</td><td>0.277642</td><td>8</td><td>0.538124</td><td>9</td><td>17</td></tr>
+          <tr><td>10</td><td>0.250897</td><td>9</td><td>0.473054</td><td>8</td><td>17</td></tr>
+          <tr><td>11</td><td>0.228093</td><td>10</td><td>0.425814</td><td>7</td><td>17</td></tr>
+          <tr><td>12</td><td>0.221525</td><td>11</td><td>0.369311</td><td>6</td><td>17</td></tr>
+          <tr><td>13</td><td>0.199868</td><td>12</td><td>0.313817</td><td>5</td><td>17</td></tr>
+          <tr><td>14</td><td>0.163441</td><td>13</td><td>0.261766</td><td>4</td><td>17</td></tr>
+          <tr><td>15</td><td>0.121944</td><td>14</td><td>0.223346</td><td>3</td><td>17</td></tr>
+          <tr><td>16</td><td>0.092096</td><td>15</td><td>0.172521</td><td>2</td><td>17</td></tr>
+          <tr><td>17</td><td>0.047934</td><td>16</td><td>0.121436</td><td>1</td><td>17</td></tr>
           </tbody>
           </table>
           <p>
-          The selected configuration was average linkage with \(k=5\), producing the lowest twelve-month mean combined rank of 15. Several configurations tie in the January-only table, so January is not used as the final selection basis.
+          The selected configuration was average linkage with \(k=5\), producing the lowest combined rank of 15.
           </p>
 
           <h4 class="title is-5">Gaussian Mixture Model</h4>
           <table class="table is-bordered is-striped">
-          <thead><tr><th>Components</th><th>January Silhouette</th><th>January Silhouette Rank</th><th>January DBI</th><th>January DBI Rank</th><th>January Combined Rank</th></tr></thead>
+          <thead><tr><th>Components</th><th>Mean Silhouette</th><th>Silhouette Rank</th><th>Mean DBI</th><th>DBI Rank</th><th>Combined Rank</th></tr></thead>
           <tbody>
-          <tr><td>2</td><td>0.091330</td><td>3</td><td>2.290070</td><td>14</td><td>17</td></tr>
-          <tr><td>3</td><td>0.169868</td><td>1</td><td>1.490954</td><td>13</td><td>14</td></tr>
-          <tr><td>4</td><td>0.043573</td><td>5</td><td>2.472320</td><td>16</td><td>21</td></tr>
-          <tr><td>5</td><td>0.142511</td><td>2</td><td>1.341654</td><td>12</td><td>14</td></tr>
-          <tr><td>6</td><td>0.034856</td><td>6</td><td>3.016285</td><td>17</td><td>23</td></tr>
-          <tr><td>7</td><td>0.078430</td><td>4</td><td>1.028478</td><td>8</td><td><strong>12</strong></td></tr>
-          <tr><td>8</td><td>-0.034703</td><td>8</td><td>1.211007</td><td>11</td><td>19</td></tr>
-          <tr><td>9</td><td>-0.130566</td><td>17</td><td>2.433872</td><td>15</td><td>32</td></tr>
-          <tr><td>10</td><td>-0.042664</td><td>9</td><td>1.052454</td><td>9</td><td>18</td></tr>
-          <tr><td>11</td><td>-0.046413</td><td>10</td><td>1.154257</td><td>10</td><td>20</td></tr>
-          <tr><td>12</td><td>-0.076846</td><td>14</td><td>0.778843</td><td>6</td><td>20</td></tr>
-          <tr><td>13</td><td>-0.092802</td><td>16</td><td>0.863641</td><td>7</td><td>23</td></tr>
-          <tr><td>14</td><td>-0.003029</td><td>7</td><td>0.497826</td><td>3</td><td><strong>10</strong></td></tr>
-          <tr><td>15</td><td>-0.092565</td><td>15</td><td>0.626341</td><td>4</td><td>19</td></tr>
-          <tr><td>16</td><td>-0.057429</td><td>13</td><td>0.653298</td><td>5</td><td>18</td></tr>
-          <tr><td>17</td><td>-0.051525</td><td>11</td><td>0.476838</td><td>1</td><td>12</td></tr>
-          <tr><td>18</td><td>-0.051525</td><td>12</td><td>0.476838</td><td>2</td><td>14</td></tr>
+          <tr><td>2</td><td>0.185145</td><td>1</td><td>1.677515</td><td>15</td><td>16</td></tr>
+          <tr><td>3</td><td>0.166246</td><td>2</td><td>1.493098</td><td>13</td><td>15</td></tr>
+          <tr><td>4</td><td>0.064983</td><td>6</td><td>2.312229</td><td>17</td><td>23</td></tr>
+          <tr><td>5</td><td>0.117817</td><td>4</td><td>1.586110</td><td>14</td><td>18</td></tr>
+          <tr><td>6</td><td>0.015510</td><td>10</td><td>1.730008</td><td>16</td><td>26</td></tr>
+          <tr><td>7</td><td>0.124330</td><td>3</td><td>1.175442</td><td>11</td><td>14</td></tr>
+          <tr><td>8</td><td>0.089632</td><td>5</td><td>1.142721</td><td>10</td><td>15</td></tr>
+          <tr><td>9</td><td>-0.020692</td><td>17</td><td>1.321926</td><td>12</td><td>29</td></tr>
+          <tr><td>10</td><td>0.024246</td><td>9</td><td>0.971675</td><td>9</td><td>18</td></tr>
+          <tr><td>11</td><td>0.049897</td><td>7</td><td>0.778536</td><td>8</td><td>15</td></tr>
+          <tr><td>12</td><td>0.011344</td><td>11</td><td>0.714504</td><td>7</td><td>18</td></tr>
+          <tr><td>13</td><td>-0.002671</td><td>15</td><td>0.701542</td><td>5</td><td>20</td></tr>
+          <tr><td><strong>14</strong></td><td><strong>0.041560</strong></td><td><strong>8</strong></td><td><strong>0.640926</strong></td><td><strong>4</strong></td><td><strong>12</strong></td></tr>
+          <tr><td>15</td><td>0.001415</td><td>13</td><td>0.554175</td><td>3</td><td>16</td></tr>
+          <tr><td>16</td><td>-0.017069</td><td>16</td><td>0.710780</td><td>6</td><td>22</td></tr>
+          <tr><td>17</td><td>0.009578</td><td>12</td><td>0.548298</td><td>2</td><td>14</td></tr>
+          <tr><td>18</td><td>0.001157</td><td>14</td><td>0.504812</td><td>1</td><td>15</td></tr>
           </tbody>
           </table>
           <p>
-          The selected GMM configuration used 14 components, producing the lowest twelve-month mean combined rank of 12. The January-only table has a different ranking and is included only as a month-specific view.
+          The selected GMM configuration used 14 components. Its combined rank was 12, although its Silhouette Score was substantially lower than those of K-means and hierarchical clustering.
           </p>
 
           <h4 class="title is-5">DBSCAN</h4>
@@ -1141,6 +1141,12 @@
           <img src="./static/images/results/dbscan/MAR_k_distance.png" alt="March DBSCAN k-distance graph">
           <figcaption>Figure 7. March DBSCAN k-distance graph used with the maximum-deviation knee-selection heuristic.</figcaption>
           </figure>
+          <p>
+          These graphs are relevant because the selected knee is used to set DBSCAN's monthly epsilon, the maximum neighborhood distance for treating regions as neighbors. The maximum-deviation knee-selection heuristic therefore connects the distance structure of each month's standardized climate profiles to the resulting density-based assignments. Changes in the knee position can alter which regions qualify as core or border points and which are labeled as noise; this helps explain why the monthly noise proportions vary. In this analysis, the selected epsilons still produced one non-noise cluster in every month, so the graphs support the parameter-selection procedure but do not provide evidence that DBSCAN produced a multi-cluster regionalization.
+          </p>
+          <p>
+          The single major DBSCAN cluster is also related to the size of the dataset. Each monthly run contains only 18 regional observations in a four-dimensional standardized feature space, while MinPts is fixed at 5. With so few points, the selected epsilon can make most regions density-reachable through connected neighborhoods, causing DBSCAN to merge them into one non-noise cluster and label only a small number of observations as noise. This is a limitation of applying density-based clustering to a small sample: the method has limited information with which to distinguish separate density regimes, and its result is sensitive to small changes in epsilon or regional observations. Therefore, DBSCAN's one-cluster outcome should not be interpreted as proof that the Philippines has only one climate regime; it indicates that this parameterization and sample did not yield multiple density-separated groups.
+          </p>
 
           <h3 class="title is-4">4. Selected-Configuration Figures</h3>
 
