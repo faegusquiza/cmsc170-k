@@ -965,6 +965,7 @@
           </p>
 
           <h4 class="title is-5">K-means</h4>
+          <div class="table-container">
           <table class="table is-bordered is-striped">
           <thead><tr><th>k</th><th>Mean Silhouette</th><th>Silhouette Rank</th><th>Mean DBI</th><th>DBI Rank</th><th>Combined Rank</th></tr></thead>
           <tbody>
@@ -986,11 +987,13 @@
           <tr><td>17</td><td>0.005631</td><td>15</td><td>0.293723</td><td>1</td><td>16</td></tr>
           </tbody>
           </table>
+          </div>
           <p>
           The selected K-means configuration was \(k=7\), which obtained the lowest combined rank of 14.
           </p>
 
           <h4 class="title is-5">Hierarchical Clustering</h4>
+          <div class="table-container">
           <table class="table is-bordered is-striped">
           <thead><tr><th>k</th><th>Mean Silhouette</th><th>Silhouette Rank</th><th>Mean DBI</th><th>DBI Rank</th><th>Combined Rank</th></tr></thead>
           <tbody>
@@ -1012,11 +1015,13 @@
           <tr><td>17</td><td>0.047934</td><td>16</td><td>0.121436</td><td>1</td><td>17</td></tr>
           </tbody>
           </table>
+          </div>
           <p>
           The selected configuration was average linkage with \(k=5\), producing the lowest combined rank of 15.
           </p>
 
           <h4 class="title is-5">Gaussian Mixture Model</h4>
+          <div class="table-container">
           <table class="table is-bordered is-striped">
           <thead><tr><th>Components</th><th>Mean Silhouette</th><th>Silhouette Rank</th><th>Mean DBI</th><th>DBI Rank</th><th>Combined Rank</th></tr></thead>
           <tbody>
@@ -1039,11 +1044,13 @@
           <tr><td>18</td><td>0.001157</td><td>14</td><td>0.504812</td><td>1</td><td>15</td></tr>
           </tbody>
           </table>
+          </div>
           <p>
           The selected GMM configuration used 14 components. Its combined rank was 12, although its Silhouette Score was substantially lower than those of K-means and hierarchical clustering.
           </p>
 
           <h4 class="title is-5">DBSCAN</h4>
+          <div class="table-container">
           <table class="table is-bordered is-striped">
           <thead><tr><th>Month</th><th>Estimated epsilon</th><th>MinPts</th><th>Noise proportion</th><th>Non-noise clusters</th></tr></thead>
           <tbody>
@@ -1061,6 +1068,7 @@
           <tr><td>DEC</td><td>2.300285</td><td>5</td><td>0.000000</td><td>1</td></tr>
           </tbody>
           </table>
+          </div>
           <p>
           DBSCAN produced one non-noise cluster in every month. Consequently, both internal metrics were undefined rather than zero, because the evaluator requires at least two non-noise clusters.
           </p>
@@ -1070,6 +1078,7 @@
           The following table reports the cluster memberships for the selected configuration of each algorithm. Cluster numbers are method-specific labels; therefore, identical numbers in different algorithms do not imply identical clusters.
           </p>
 
+          <div class="table-container">
           <table class="table is-bordered is-striped">
           <thead><tr><th>Month</th><th>K-means, k=7</th><th>Hierarchical, k=5</th><th>GMM, 14 components</th><th>DBSCAN</th></tr></thead>
           <tbody>
@@ -1087,6 +1096,7 @@
           <tr><td>DEC</td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 12, REGION 9</li><li><strong>Cluster 2:</strong> CAR</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 6, REGION 7</li><li><strong>Cluster 4:</strong> NCR, REGION 2</li><li><strong>Cluster 5:</strong> REGION 1, REGION 3</li><li><strong>Cluster 6:</strong> REGION 10, REGION 11, REGION 13</li><li><strong>Cluster 7:</strong> REGION 4-A, REGION 5, REGION 8</li></ol></td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 1, REGION 10, REGION 11, REGION 12, REGION 3, REGION 9</li><li><strong>Cluster 2:</strong> CAR, REGION 2</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 6, REGION 7</li><li><strong>Cluster 4:</strong> NCR, REGION 13, REGION 4-A</li><li><strong>Cluster 5:</strong> REGION 5, REGION 8</li></ol></td><td><ol><li><strong>Cluster 1:</strong> REGION 6, REGION 7</li><li><strong>Cluster 2:</strong> REGION 2</li><li><strong>Cluster 3:</strong> NCR, REGION 4-A</li><li><strong>Cluster 4:</strong> REGION 9</li><li><strong>Cluster 5:</strong> REGION 11</li><li><strong>Cluster 6:</strong> REGION 10, REGION 12</li><li><strong>Cluster 7:</strong> BARMM</li><li><strong>Cluster 8:</strong> NIR</li><li><strong>Cluster 9:</strong> MIMAROPA</li><li><strong>Cluster 10:</strong> REGION 5, REGION 8</li><li><strong>Cluster 12:</strong> REGION 1, REGION 3</li><li><strong>Cluster 13:</strong> CAR</li><li><strong>Cluster 14:</strong> REGION 13</li></ol></td><td><ol><li><strong>Cluster 1:</strong> all 18 regions</li><li><strong>Noise:</strong> none</li></ol></td></tr>
           </tbody>
           </table>
+          </div>
 
           <p>
           K-means repeatedly isolated CAR and REGION 2, while BARMM, REGION 10, and REGION 12 frequently formed a recurring group. Hierarchical clustering produced more stable five-cluster structures, especially the repeated pair CAR–REGION 2 and the recurring MIMAROPA–NIR–REGION 6–REGION 7 grouping. GMM produced more fragmented assignments because its selected component count was large relative to the 18 observations. DBSCAN generally treated the dataset as one connected density component and therefore did not provide multi-cluster regionalization.
@@ -1098,6 +1108,7 @@
           Table 5 compares the final assignments using the same standardized monthly feature tables. Higher Silhouette Scores and lower DBI values are preferable.
           </p>
 
+          <div class="table-container">
           <table class="table is-bordered is-striped">
           <thead><tr><th>Month</th><th>K-means Silhouette</th><th>K-means DBI</th><th>Hierarchical Silhouette</th><th>Hierarchical DBI</th><th>GMM Silhouette</th><th>GMM DBI</th></tr></thead>
           <tbody>
@@ -1115,6 +1126,7 @@
           <tr><td>DEC</td><td>0.334000</td><td>0.780501</td><td>0.409811</td><td>0.725267</td><td>0.126367</td><td>0.457934</td></tr>
           </tbody>
           </table>
+          </div>
 
           <p>
           Across all months, hierarchical clustering obtained the highest mean Silhouette Score, 0.330428, followed by K-means at 0.254037 and GMM at 0.041560. GMM obtained the lowest mean DBI, 0.640926, followed by hierarchical clustering at 0.708875 and K-means at 0.748100. Thus, the metrics do not identify one universally superior algorithm.
