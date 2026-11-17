@@ -19,8 +19,8 @@ values near 0 mean a region lies on the border of two clusters, and negative
 values suggest a region may have been placed in the wrong cluster.
 
 Run this file, then enter kmeans, dbscan, or hierarchical when prompted.
-The score table is saved as silhouette_scores.csv in that method's
-method_results/<method>/monthly folder.
+The score table is saved as silhouette_scores.csv in
+metric_results/<method>/monthly.
 
 Formula resource:
     https://scikit-learn.org/stable/modules/clustering.html#silhouette-coefficient
@@ -302,7 +302,7 @@ def main():
             folder is invalid, a month's inputs are invalid, or saving fails.
 
     Output:
-        A silhouette_scores.csv file in the chosen method's monthly folder.
+        A silhouette_scores.csv file in metric_results/<method>/monthly.
         The terminal also displays each month's score and evaluation status.
     """
     while True:
@@ -312,7 +312,7 @@ def main():
         print("Please enter kmeans, dbscan, hierarchical or gaussian.")
 
     # The selected method determines the folder, so no path needs to be typed.
-    monthly_folder = Path("method_results") / method / "monthly"
+    monthly_folder = Path("metric_results") / method / "monthly"
     if not monthly_folder.is_dir():
         print(f"Error: No saved results found in {monthly_folder}. Run the method first.")
         return 1
