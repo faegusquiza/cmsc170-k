@@ -71,39 +71,64 @@ pip install -r requirements.txt
 
 
 
-## Gathering the Data
+## Running the Complete Pipeline
 
-Ensure that the required coordinate CSV files are placed inside the `gathered_data/grid_coordinates/` directory.
+The recommended way to run the research workflow is through `main.py`.
+Before running it, ensure that the required coordinate CSV files are placed
+inside the `gathered_data/grid_coordinates/` directory.
 
-Run the data retriever script:
+```powershell
+python main.py
+```
+
+When prompted:
+
+```text
+Retrieve climate data again? [y/n]:
+```
+
+- Enter `y` to retrieve fresh NASA POWER data and regenerate the processed
+  datasets.
+- Enter `n` to use the existing data in `processed_data/`.
+
+The pipeline then runs K-means, hierarchical clustering, Gaussian Mixture
+Model (GMM), and DBSCAN for the monthly datasets, evaluates the Silhouette
+coefficient and Davies-Bouldin Index where applicable, and saves the results
+under:
+
+```text
+method_results/
+metric_results/
+```
+
+The pipeline uses the default parameters defined in `main.py`, including a
+random seed base of `50`, average linkage for hierarchical clustering, and a
+GMM convergence tolerance of `0.0001`.
+
+## Running Individual Pipeline Stages
+
+The following commands are optional and are intended for running or
+debugging individual stages of the workflow. They are not required when using
+`main.py`.
+
+To retrieve the climate data separately:
 
 ```powershell
 python -m utilities.data_retriever
 ```
 
-The script retrieves the climate data and exports the resulting regional CSV files into the `gathered_data/regions/` directory.
+The data retriever exports regional climate data into
+`gathered_data/regions/`.
 
-
-
-## Processing the Data
-
-Data needs to pre-processed before running any of the clustering methods.
-
-Run the data reader and preprocessing script:
+To preprocess the gathered data:
 
 ```powershell
 python -m utilities.data_reader
 ```
 
-The script processes the gathered data and outputs them to `processed_data/` directory.
+The data reader outputs the shared processed datasets into `processed_data/`.
 
-
-
-## Running the Methods
-
-Once all data has been processed, each methods script must be run.
-
-Run the method scripts:
+To run an individual clustering method:
 
 ```powershell
 python -m methods.kmeans_clustering
@@ -112,22 +137,12 @@ python -m methods.gmm
 python -m methods.dbscan_clustering
 ```
 
-Each script runs the specified method and outputs its result to `method_results/<method>/monthly/` directory.
-
-
-
-## Evaluating the Methods
-
-After running all of the method completely, evaluating may begin.
-
-Run the metric scripts:
+To evaluate method outputs separately:
 
 ```powershell
 python -m metrics.davies_bouldin_index
 python -m metrics.silhouette_score
 ```
-
-Each script runs the specified metric evaluation and outputs its result to the corresponding `method_results/<method>/monthly/` directory.
 
 
 <!-- 

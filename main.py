@@ -289,7 +289,7 @@ def main():
         summaries.extend(run_dbscan(regions, monthly_values))
         
         print(summaries)
-        # save_summary(summaries)
+        save_summary(summaries)
     except (OSError, ValueError, RuntimeError) as error:
         raise SystemExit(f"Clustering sweep stopped: {error}") from error
 
