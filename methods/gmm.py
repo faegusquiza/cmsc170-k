@@ -151,7 +151,7 @@ def gaussian_clusters(data, distros, dims, err_tolerance):
     iterations = 0
     while(1):
         iterations += 1
-        print("iterations:", iterations)
+        # print("iterations:", iterations)
         # This will be the expectation step
         # Loop for the data
         for i in range(len(data)):
@@ -220,10 +220,10 @@ def gaussian_clusters(data, distros, dims, err_tolerance):
             log_like_new += math.log(inner_log_sum)
 
         if(abs(log_like_new - log_like_old) < err_tolerance):
-            print("convergence detected")
+            # print("convergence detected")
             break
         log_like_old = log_like_new 
-        print("New means:\n", means, "\nNew Weights:\n", weights, "\nNew_covars\n", cov_mat)
+        # print("New means:\n", means, "\nNew Weights:\n", weights, "\nNew_covars\n", cov_mat)
     details = {
         "initial_indices" : initial_indices,
         "initial_covariances" : initial_covars ,
