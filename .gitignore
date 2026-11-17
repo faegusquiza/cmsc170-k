@@ -1,8 +1,8 @@
-__pycache__/
+__pycache__/*
 *.py[cod]
 .venv/
 venv/
-methods/__pycache__/
-metrics/__pycache__/
-tests/__pycache__/
-utilities/__pycache__/
+methods/__pycache__/*
+metrics/__pycache__/*
+tests/__pycache__/*
+utilities/__pycache__/*
