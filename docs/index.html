@@ -220,31 +220,7 @@
         <h2 class="title is-3">Abstract</h2>
         <div class="content has-text-justified">
           <p>
-            We present the first method capable of photorealistically reconstructing a non-rigidly
-            deforming scene using photos/videos captured casually from mobile phones.
-          </p>
-          <p>
-            Our approach augments neural radiance fields
-            (NeRF) by optimizing an
-            additional continuous volumetric deformation field that warps each observed point into a
-            canonical 5D NeRF.
-            We observe that these NeRF-like deformation fields are prone to local minima, and
-            propose a coarse-to-fine optimization method for coordinate-based models that allows for
-            more robust optimization.
-            By adapting principles from geometry processing and physical simulation to NeRF-like
-            models, we propose an elastic regularization of the deformation field that further
-            improves robustness.
-          </p>
-          <p>
-            We show that <span class="dnerf">Nerfies</span> can turn casually captured selfie
-            photos/videos into deformable NeRF
-            models that allow for photorealistic renderings of the subject from arbitrary
-            viewpoints, which we dub <i>"nerfies"</i>. We evaluate our method by collecting data
-            using a
-            rig with two mobile phones that take time-synchronized photos, yielding train/validation
-            images of the same pose at different viewpoints. We show that our method faithfully
-            reconstructs non-rigidly deforming scenes and reproduces unseen views with high
-            fidelity.
+            Climate conditions vary in the Philippine archipelago, and summarizing those variations can help reveal regional patterns. In this study, the Philippines is subdivided into 18 regions that would then be clustered based on the similarities of their climate. This paper groups Philippine locations by their climate profiles using monthly temperature, rainfall, wind, and solar data from 2001 to 2025. The data are collected from NASA POWER LARC through its RESTful APIs and represent four parameters: All Sky Surface Shortwave Downward Irradiance, Temperature at 2 Meters, Precipitation Average, and Wind Speed at 10 meters. We compare K-means, Hierarchical Clustering, Gaussian Mixture Models, and DBSCAN to determine how the methods form climate groupings from the same regional data. The study evaluates the resulting clusters using the Silhouette Score and Davies-Bouldin Index, while considering whether the groupings remain interpretable in terms of the selected climate variables. Because the NASA data represent grid cells rather than exact measurements at every location, the resulting clusters are interpreted as general representations of climate similarities rather than precise classifications of local climate conditions.
           </p>
         </div>
       </div>
@@ -252,7 +228,7 @@
     <!--/ Abstract. -->
     
     <!-- Introduction. -->
-    <div class="columns is-centered has-text-centered">
+    <!-- <div class="columns is-centered has-text-centered">
       <div class="column is-four-fifths">
         <h2 class="title is-3">Introduction</h2>
         <div class="content has-text-justified">
@@ -285,45 +261,21 @@
           </p>
         </div>
       </div>
-    </div>
+    </div> -->
     <!--/ Introduction. -->
     
-    <!-- Limitation. -->
+    <!-- Delimitation. -->
     <div class="columns is-centered has-text-centered">
       <div class="column is-four-fifths">
-        <h2 class="title is-3">Limitation</h2>
+        <h2 class="title is-3">Delimitation</h2>
         <div class="content has-text-justified">
           <p>
-            We present the first method capable of photorealistically reconstructing a non-rigidly
-            deforming scene using photos/videos captured casually from mobile phones.
-          </p>
-          <p>
-            Our approach augments neural radiance fields
-            (NeRF) by optimizing an
-            additional continuous volumetric deformation field that warps each observed point into a
-            canonical 5D NeRF.
-            We observe that these NeRF-like deformation fields are prone to local minima, and
-            propose a coarse-to-fine optimization method for coordinate-based models that allows for
-            more robust optimization.
-            By adapting principles from geometry processing and physical simulation to NeRF-like
-            models, we propose an elastic regularization of the deformation field that further
-            improves robustness.
-          </p>
-          <p>
-            We show that <span class="dnerf">Nerfies</span> can turn casually captured selfie
-            photos/videos into deformable NeRF
-            models that allow for photorealistic renderings of the subject from arbitrary
-            viewpoints, which we dub <i>"nerfies"</i>. We evaluate our method by collecting data
-            using a
-            rig with two mobile phones that take time-synchronized photos, yielding train/validation
-            images of the same pose at different viewpoints. We show that our method faithfully
-            reconstructs non-rigidly deforming scenes and reproduces unseen views with high
-            fidelity.
+            The study is limited by the coverage of the data obtained from NASA, as the dataset represents climate conditions over the weighted grid cells of the regions rather than providing exact measurements for every location. Since the selected grid cells vary in size and may overlap multiple regions, the climate parameters may not be accurate under the specific conditions of each location. Consequently, the resulting clusters should be interpreted as general representations of climate similarities rather than precise classifications of local climate conditions.
           </p>
         </div>
       </div>
     </div>
-    <!--/ Limitation. -->
+    <!--/ Delimitation. -->
   </div>
 </section>
 
@@ -427,7 +379,7 @@ flowchart TD
           </p>
 
           \[
-          d(\mathbf{x}_i,\textbf{\mu}_j)
+          d(\mathbf{x}_i,\boldsymbol{\mu}_j)
           =
           \sqrt{
             \sum_{r=1}^{4}
@@ -437,7 +389,7 @@ flowchart TD
           \]
 
           <p>
-            where \(\mathbf{x}_i\) represents the four-dimensional feature vector of region \(i\), and \(\textbf{\mu}_j\) represents the centroid of cluster \(j\).
+            where \(\mathbf{x}_i\) represents the four-dimensional feature vector of region \(i\), and \(\boldsymbol{\mu}_j\) represents the centroid of cluster \(j\).
           </p>
 
           <h6 class="title is-6">Cluster Assignment and Centroid Update</h6>
@@ -449,12 +401,12 @@ flowchart TD
           \[
           C_i =
           \operatorname*{arg\,min}_{j \in \{1,\ldots,k\}}
-          d(\mathbf{x}_i,\textbf{\mu}_j)
+          d(\mathbf{x}_i,\boldsymbol{\mu}_j)
           \tag{3}
           \]
 
           \[
-          \textbf{\mu}_j =
+          \boldsymbol{\mu}_j =
           \frac{1}{|C_j|}
           \sum_{\mathbf{x}_i \in C_j}
           \mathbf{x}_i
@@ -468,7 +420,7 @@ flowchart TD
           <h6 class="title is-6">Selection of the Number of Clusters</h6>
 
           <p>
-            The same value of \(k\) is used for all twelve monthly clustering runs. This value is selected by executing K-means over a range of candidate \(k\) values and ranking each candidate by its Silhouette Score and Davies-Bouldin Index. The two rankings are then summed, and the \(k\) with the lowest combined rank is selected [15,20] (see Evaluation Metrics and the Metric Evaluation Plan).
+            The same value of \(k\) was used for all twelve monthly clustering runs. This value was selected by executing K-means over a range of candidate \(k\) values, ranking each candidate by its Silhouette Score and Davies-Bouldin Index, and choosing the \(k\) with the lowest combined rank [15,20] (see Evaluation Metrics and Evaluation Procedure).
           </p>
 
           <h6 class="title is-6">Random Seed and Reproducibility</h6>
@@ -539,7 +491,7 @@ flowchart TD
           </p>
 
           <p>
-            Lund and Li describe average linkage as a compromise between single and complete linkage in climatic regionalization [11]. Additionally, Fiddes et al. compared different clustering methods and preferred average linkage in their study [12]. These studies support the selection of average linkage for this project.
+            Average linkage is a compromise between single and complete linkage and has been used in climatic regionalization [11,12].
           </p>
 
           <h6 class="title is-6">Cluster Merging</h6>
@@ -785,7 +737,7 @@ flowchart TD
           <h6 class="title is-6">Epsilon Estimation Using the k-Distance Graph</h6>
 
           <p>
-            The selection of epsilon is an important consideration in DBSCAN because inappropriate parameter values can affect the resulting cluster structure and the number of observations classified as noise. A \(k\)-distance graph provides a means of examining the distribution of distances between observations and their \(k\)-th nearest neighbors. Yin et al. [4] discuss the use of \(k\)-distance curves for determining DBSCAN parameters and identifying suitable epsilon values.
+            Epsilon strongly affects the resulting cluster structure and the number of observations classified as noise, so it was estimated from the \(k\)-distance graph, which shows the distance of each observation to its \(k\)-th nearest neighbor [4].
           </p>
 
           <p>
@@ -873,7 +825,7 @@ flowchart TD
           </p>
 
           <p>
-            This procedure is inspired by the general concept of knee detection, in which a significant change in a curve is used to identify an appropriate operating point. Satopää et al. [5] introduced the Kneedle algorithm, which detects knee points through normalization, transformation of the curve, and the identification of local maxima subject to threshold conditions. However, the present implementation uses a simplified maximum-deviation approach. It does not implement the complete Kneedle procedure, particularly its local-maximum detection and sensitivity-based thresholding. Therefore, the method is treated as a maximum-deviation knee-selection heuristic rather than a direct implementation of Kneedle.
+            This procedure is a simplified version of the Kneedle algorithm [5]: it omits Kneedle's local-maximum detection and sensitivity thresholding, and is therefore treated as a maximum-deviation knee-selection heuristic rather than a direct implementation of Kneedle.
           </p>
 
           <h6 class="title is-6">Neighborhood Identification</h6>
@@ -938,65 +890,31 @@ flowchart TD
 
           <h4 class="title is-4">Evaluation Metrics</h4>
           <p>
-            The clustering results are evaluated using two internal validation metrics: the Silhouette Score and the Davies-Bouldin Index. These metrics assess clustering quality by examining cluster cohesion and separation without requiring ground-truth labels. The following subsections describe their principles, uses, and limitations.
+            The clustering results were evaluated using two internal validation metrics, the Silhouette Score and the Davies-Bouldin Index, which assess cluster cohesion and separation without requiring ground-truth labels.
           </p>
 
           <h5 class="title is-5">Metric 1: Silhouette Score</h5>
           <p>
-            The silhouette score is an internal clustering validation metric that quantifies how well each data point fits its assigned cluster by contrasting within-cluster cohesion against nearest-cluster separation [14]. It ranges from &minus;1 to +1, where values near +1 indicate compact, well-separated clusters, values near 0 suggest borderline assignment, and negative values flag potential misclassification [15,17].
-          </p>
-
-          <h6 class="title is-6">Determining Optimal Cluster Number</h6>
-          <p>
-            The most widespread use of the silhouette score is selecting the optimal number of clusters (k) in algorithms like K-means, where the highest average silhouette width across candidate k values indicates the best partition [15]. This approach has been applied to customer segmentation [16] and job vacancy corpora [17] to identify the k value yielding the most coherent cluster structure.
-          </p>
-
-          <h6 class="title is-6">Comparing Algorithms and Configurations</h6>
-          <p>
-            Beyond selecting k, the silhouette score serves as a comparative metric to evaluate different clustering algorithms, distance metrics, and preprocessing choices without requiring ground-truth labels [20].
-          </p>
-
-          <h6 class="title is-6">Known Limitations</h6>
-          <p>
-            Several studies identify conditions under which the silhouette score produces misleading results. The metric assumes roughly isotropic clusters of comparable scale; when cluster diameters differ substantially, silhouette values can be unreliable [17]. In network clustering, the score accurately identifies the true community count only when clusters are well separated and balanced, tending to underestimate under strong imbalance or weak separation and to overestimate in sparse networks [18]. The standard micro-averaged silhouette is sensitive to cluster imbalance, whereas the often-overlooked macro-averaged variant is more robust [19].
+            The Silhouette Score quantifies how well each observation fits its assigned cluster by contrasting its within-cluster cohesion with its separation from the nearest other cluster [14]. It ranges from &minus;1 to +1: values near +1 indicate compact, well-separated clusters, values near 0 indicate borderline assignments, and negative values indicate possible misclassification [15]. Higher values are better.
           </p>
 
           <h5 class="title is-5">Metric 2: Davies-Bouldin Index</h5>
           <p>
-            The Davies-Bouldin Index (DBI) is an internal cluster validity measure that evaluates clustering performance by quantifying the ratio of intra-cluster cohesion to inter-cluster separation, where lower values indicate better-defined clusters [20]. It computes the average similarity between each cluster and its most similar counterpart, using cluster centroids and within-cluster dispersion to capture both compactness and separation in a single metric [20].
+            The Davies-Bouldin Index (DBI) is the average similarity between each cluster and its most similar cluster, computed from cluster centroids and within-cluster dispersion [20]. Lower values indicate more compact and better-separated clusters.
           </p>
 
-          <h6 class="title is-6">Determining Optimal Cluster Number</h6>
+          <h5 class="title is-5">Evaluation Procedure</h5>
           <p>
-            The most common use of DBI is selecting the optimal number of clusters (k) in partitioning algorithms like K-means, where the k value yielding the lowest DBI is considered best [20]. Researchers iterate over candidate k values and choose the partition that minimizes DBI, as a smaller value signals tighter clusters with greater separation between them [7,8].
-          </p>
-
-          <h6 class="title is-6">Comparing Algorithms and Configurations</h6>
-          <p>
-            DBI serves as a benchmark to compare clustering algorithms, distance metrics, and initialization strategies without requiring ground-truth labels [9]. DBI is routinely used to compare different clustering algorithms on the same dataset, because it summarizes within-cluster compactness and between-cluster separation into one minimization criterion [7]. More recent methodological work still describes internal indices such as DBI as standard tools for comparing the goodness of results from different clustering methods [10].
-          </p>
-
-          <h6 class="title is-6">Known Limitations</h6>
-          <p>
-            DBI's reliability depends on cluster geometry and data distribution. The metric works well for convex-shaped, well-separated clusters but can be misleading for concave, nested, or density-based cluster shapes [24]. It is sensitive to cluster imbalance, non-compact clusters, and high-dimensional data, which can distort the compactness-to-separation ratio [9]. Treating DBI as an objective function for identifying good partitions can promote clusterings that match expert knowledge poorly, suggesting it is better suited for selecting cluster count (k) than for defining optimal partitions [25].
-          </p>
-
-          <h5 class="title is-5">Metric Evaluation Plan</h5>
-          <p>
-            This section maps how the Silhouette Score and the Davies-Bouldin Index are utilized throughout the project: first to select hyperparameters, and then to compare the four algorithms.
+            The two metrics were used in two stages: first to select the hyperparameters of each algorithm, and then to compare the algorithms with one another.
           </p>
 
           <h6 class="title is-6">Hyperparameter Selection: Cluster Count Evaluation</h6>
           <p>
-            Multi-criteria decision-making (MCDM) provides a framework for evaluating alternatives using multiple criteria, particularly when individual criteria produce conflicting assessments. Cebesoy et al. discuss the challenges of making decisions when no alternative performs best across all evaluation criteria, highlighting the need for systematic approaches to combine different assessments [26]. One approach to addressing this problem is rank aggregation, which combines multiple rankings into a single overall ranking. Viappiani discusses scoring-based rank aggregation methods, including the Borda Count, in which alternatives receive scores based on their positions in individual rankings [27]. The Borda Count is mathematically equivalent to selecting the alternative with the lowest sum of ranks when all rankings contain the same alternatives.
+            Because the two metrics can disagree on which configuration is best, rank aggregation was used to combine them [26]. In the Borda Count, alternatives are scored by their positions in each ranking, which is equivalent to choosing the lowest sum of ranks when all rankings contain the same alternatives [27].
           </p>
 
           <p>
-            Applying this approach to clustering evaluation allows configurations to be ranked independently according to the Silhouette Score and the Davies-Bouldin Index, with their respective ranks combined to determine an overall ranking. This provides a straightforward way to consider both evaluation metrics without directly comparing their different numerical scales.
-          </p>
-
-          <p>
-            For this project, the combined rank is defined as:
+            Following this approach, candidate configurations were ranked independently according to the Silhouette Score and the Davies-Bouldin Index, and the two ranks were summed. This allowed both metrics to be considered without directly comparing their different numerical scales or optimization directions, and without introducing additional weighting parameters. The combined rank was defined as:
           </p>
 
           <p>
@@ -1014,54 +932,16 @@ flowchart TD
           </ul>
 
           <p>
-            The configuration with the lowest combined rank is preferred.
+            The configuration with the lowest combined rank was selected. This procedure was applied to K-means, Hierarchical Clustering, and the Gaussian Mixture Model, since each assigns every observation to a cluster and their configurations can therefore be compared on the same set of observations.
           </p>
 
           <p>
-            The combined ranking approach is applied to K-means, Hierarchical Clustering, and Gaussian Mixture Models to determine the most suitable hyperparameter configuration for each algorithm. These algorithms produce cluster assignments for all observations, allowing their configurations to be evaluated on the same set of observations through the Silhouette Score and Davies-Bouldin Index. Since these metrics have different numerical scales and optimization directions, converting their results into rankings allows them to be combined without directly comparing their raw values. The sum-of-ranks approach also provides a simple way to balance the two evaluation criteria without introducing additional weighting parameters.
-          </p>
-
-          <p>
-            DBSCAN is evaluated separately because its ability to classify observations as noise can result in different configurations being evaluated on different subsets of the dataset. Its evaluation therefore considers both clustering quality and the proportion of observations classified as noise.
-          </p>
-
-          <p>
-            Table 1 is an illustrative example of the ranking methodology.
-          </p>
-
-          <div style="overflow-x: auto;">
-            <table class="table is-bordered is-striped is-hoverable" style="margin: 0 auto;">
-              <caption><strong>Table 1.</strong> Ranking sample (illustrative values)</caption>
-              <thead>
-                <tr>
-                  <th>k</th>
-                  <th>Silhouette</th>
-                  <th>Silhouette rank</th>
-                  <th>DBI</th>
-                  <th>DBI rank</th>
-                  <th>Combined rank</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td>2</td><td>0.98</td><td>1</td><td>0.8</td><td>3</td><td>4</td></tr>
-                <tr><td>3</td><td>0.5</td><td>2</td><td>0.2</td><td>1</td><td><strong>3</strong></td></tr>
-                <tr><td>4</td><td>0.4</td><td>3</td><td>0.5</td><td>2</td><td>5</td></tr>
-                <tr><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td></tr>
-                <tr><td>17</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <p>
-            Based on the table, \(k=3\) has the lowest combined rank and is therefore selected as the cluster count.
+            DBSCAN was evaluated separately because its ability to label observations as noise means that different configurations are scored on different subsets of the data. Its configurations were therefore judged on both clustering quality and the proportion of observations classified as noise.
           </p>
 
           <h6 class="title is-6">Algorithm Evaluation</h6>
           <p>
-            The performance of the four clustering algorithms, namely K-means, Hierarchical Clustering, Gaussian Mixture Models (GMM), and DBSCAN, is evaluated using the Silhouette Score and the Davies-Bouldin Index (DBI). These metrics provide an assessment of clustering quality by measuring the cohesion of observations within their assigned clusters and the separation between different clusters. The Silhouette Score evaluates how closely an observation is grouped with observations in its own cluster compared to those in other clusters, where values closer to 1 indicate well-separated clusters, values around 0 suggest overlapping clusters, and negative values may indicate potential misclassification. In contrast, the Davies-Bouldin Index measures the average similarity between each cluster and its most similar neighboring cluster, with lower values indicating more compact and better-separated clusters.
-          </p>
-          <p>
-            The results from both metrics are considered when comparing the performance of the four algorithms, with higher Silhouette Scores and lower DBI values indicating more favorable clustering results. Any differences or disagreements between the two metrics are also examined to provide a more balanced interpretation of algorithm performance. Through this evaluation, the study aims to identify which algorithm produces better-defined groupings within the Philippine climate dataset based on the selected internal validation metrics.
+            The selected configuration of each of the four algorithms was then evaluated using the Silhouette Score and the Davies-Bouldin Index, with higher Silhouette Scores and lower DBI values indicating more favorable clustering. Disagreements between the two metrics were also examined to give a more balanced interpretation of algorithm performance.
           </p>
         </div>
       </div>
