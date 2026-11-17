@@ -270,7 +270,7 @@
         <h2 class="title is-3">Delimitation</h2>
         <div class="content has-text-justified">
           <p>
-            The study is limited by the coverage of the data obtained from NASA, as the dataset represents climate conditions over the weighted grid cells of the regions rather than providing exact measurements for every location. Since the selected grid cells vary in size and may overlap multiple regions, the climate parameters may not be accurate under the specific conditions of each location. Consequently, the resulting clusters should be interpreted as general representations of climate similarities rather than precise classifications of local climate conditions.
+            The study is subject to several limitations concerning data coverage, clustering methods, and evaluation. First, the NASA POWER dataset represents climate conditions through weighted grid cells rather than exact measurements for every location. Since the selected grid cells vary in size and may overlap multiple regions, the resulting climate parameters may not accurately reflect the specific conditions of individual locations. Consequently, the resulting clusters should be interpreted as general representations of climate similarities rather than precise classifications of local climate conditions. Furthermore, the analysis contains only 18 observations per month, which may affect the stability and statistical resolution of the clusters. K-means and GMM also rely on random initialization, and only one run was performed for each month; therefore, their resulting cluster assignments may vary depending on the initialization. The Silhouette Score and Davies-Bouldin Index (DBI) favor particular cluster geometries, particularly compact and well-separated groups, and may not fully represent climatologically meaningful but overlapping climate regimes. Unequal cluster sizes may also influence both metrics and potentially make fragmented clustering solutions appear favorable under one metric. Meanwhile, DBSCAN is sensitive to the selection of epsilon. Although epsilon was estimated monthly using the maximum-deviation knee-selection heuristic, the selected values resulted in only one non-noise cluster for every month. Additionally, DBSCAN's evaluation metrics exclude noise points, making them not directly comparable with scores calculated using all 18 regions. Lastly, the use of area-weighted regional averages may not fully capture variations associated with local topography, coastlines, and station-level climate conditions.
           </p>
         </div>
       </div>
@@ -327,7 +327,7 @@
             The Philippine Archipelago is divided into its 18 administrative regions, which are then clustered based on the similarities of their climate. Climate is measured through four parameters: All Sky Surface Shortwave Downward Irradiance, Temperature at 2 Meters, Precipitation Average, and Wind Speed at 10 Meters. The 18 regions include the Negros Island Region, which was recently added to the archipelago [1].
           </p>
           <p>
-            The data was collected from NASA POWER LaRC through the RESTful APIs that it provides. The quality of the collected data is limited by the resolution of the two grids on which the four chosen parameters lie. The first is the MERRA-2 grid, used for three of the four parameters, which are meteorological data sets with the code names T2M, PRECTOTCORR, and WS10M. This grid has a resolution of ½° latitude and ⅝° longitude [2]. The second is the SYN1deg grid, used for the radiation data set; in this paper, the only irradiance parameter is ALLSKY_SFC_SW_DWN. This grid has a resolution of 1° latitude and 1° longitude [2].
+            The data was collected from NASA POWER LaRC through the RESTful APIs that it provides [2]. The quality of the collected data is limited by the resolution of the two grids on which the four chosen parameters lie. The first is the MERRA-2 grid, used for three of the four parameters, which are meteorological data sets with the code names T2M, PRECTOTCORR, and WS10M. This grid has a resolution of ½° latitude and ⅝° longitude [2]. The second is the SYN1deg grid, used for the radiation data set; in this paper, the only irradiance parameter is ALLSKY_SFC_SW_DWN. This grid has a resolution of 1° latitude and 1° longitude [2].
           </p>
           <p>
             The set of grid cells collected for a region consists of the cells that contain a piece of land belonging to that region. However, because of the resolution of these grids and the maritime nature of the Philippines, the API may return cells containing substantial water areas, which could introduce inconsistencies in the data [3]. To resolve this, area-weighted spatial aggregation is applied [4]. The climate data from each selected grid cell is multiplied by its land-area weight and accumulated, then divided by the total weight for that region. This normalization also absorbs small floating-point differences, so that the total weight does not need to be exactly one.
@@ -346,7 +346,7 @@
           <p>For each of the 12 months, the values of the four parameters (precipitation, temperature, wind, and solar) for each of the 18 regions from 2001 to 2025 are averaged by <code>regional_average()</code> and stored in a dictionary. This function returns an alphabetically sorted array of region names, an array of their monthly averages, and the headers following the format "GRID_PARAMETER_MONTH."</p>
           <p>The monthly averages are then passed to <code>standardize_data()</code> to place the four parameters on comparable scales. For each parameter column, the function calculates the mean and standard deviation across the 18 regions. Each value is standardized by subtracting the column's mean and dividing by its standard deviation:</p>
           <p>standardized value = (value − column mean) / column standard deviation</p>
-          <p>This prevents a parameter from dominating the distance calculations simply because its numerical values are larger [4,5]. If all regions have the same value for a column, its standardized values are set to zero to avoid division by zero. The original monthly averages are preserved separately.</p>
+          <p>This prevents a parameter from dominating the distance calculations simply because its numerical values are larger [7]–[9]. If all regions have the same value for a column, its standardized values are set to zero to avoid division by zero. The original monthly averages are preserved separately.</p>
           <p>Finally, <code>read_monthly_data()</code> returns four items: <code>regions</code>, <code>monthly_values</code>, <code>monthly_headers</code>, and <code>monthly_averages</code>. <code>regions</code> contains the alphabetically sorted region names, while the other three are dictionaries with keys from "JAN" to "DEC". Each monthly dataset contains 18 rows representing the regions and four columns representing precipitation, temperature, wind, and solar values. <code>monthly_values</code> contains the values standardized across regions for clustering, <code>monthly_headers</code> contains their corresponding column names ("GRID_PARAMETER_MONTH"), and <code>monthly_averages</code> keeps the averages in their original units.</p>
 
           <h4 class="title is-4">Methods</h4>
@@ -427,11 +427,11 @@
           <h6 class="title is-6">Random Seed and Reproducibility</h6>
 
           <p>
-            The final clustering results depend heavily on the initial centroid positions, as an unfavorable initialization may lead the algorithm to a local minimum [6]. To ensure that all group members obtain identical results, the random number generator is initialized with a fixed seed of \(170\) before clustering. This causes the generator to produce the same sequence of random values across runs, allowing members using the same environment to select the same initial regions and obtain reproducible clusters [8].
+            The final clustering results depend heavily on the initial centroid positions, as an unfavorable initialization may lead the algorithm to a local minimum [6]. To ensure that all group members obtain identical results, the random number generator is initialized with a fixed seed of \(170\) before clustering. This causes the generator to produce the same sequence of random values across runs, allowing members using the same environment to select the same initial regions and obtain reproducible clusters [10].
           </p>
 
           <p>
-            However, seeding only improves reproducibility and does not guarantee better clustering results. Since only one run is performed per month, each result reflects a single set of initial centroids, which may not produce the best possible grouping [6]. Furthermore, random sequences may differ across Python versions [8], so all group members should use the same Python version to maintain consistency.
+            However, seeding only improves reproducibility and does not guarantee better clustering results. Since only one run is performed per month, each result reflects a single set of initial centroids, which may not produce the best possible grouping [6]. Furthermore, random sequences may differ across Python versions [10], so all group members should use the same Python version to maintain consistency.
           </p>
 
           <h6 class="title is-6">Visualization of Clustering Results</h6>
@@ -447,7 +447,7 @@
           <h5 class="title is-5">Method 2: Hierarchical Clustering</h5>
 
           <p>
-            The Python file <code>hierarchical_clustering.py</code> implements agglomerative hierarchical clustering, which begins by treating each observation as an individual cluster and repeatedly merges the closest clusters to construct a hierarchy [9]. The resulting hierarchy is represented through a tree diagram called a dendrogram [10].
+            The Python file <code>hierarchical_clustering.py</code> implements agglomerative hierarchical clustering, which begins by treating each observation as an individual cluster and repeatedly merges the closest clusters to construct a hierarchy [11]. The resulting hierarchy is represented through a tree diagram called a dendrogram [12].
           </p>
 
           <p>
@@ -536,7 +536,7 @@
           <h6 class="title is-6">Step 1: Parameter Initialization</h6>
 
           <p>
-            Initialize the parameters of the Gaussian components before performing the iterative optimization process. The initial means are selected by randomly sampling \(K\) distinct observations from the dataset without replacement. Each component is assigned an equal mixing weight:
+            Initialize the parameters of the Gaussian components before performing the iterative optimization process.             The initial means are selected by randomly sampling \(K\) distinct observations from the dataset without replacement. Each component is assigned an equal mixing weight [14], [15]:
           </p>
 
           <p>
@@ -738,7 +738,7 @@
           <h6 class="title is-6">Epsilon Estimation Using the k-Distance Graph</h6>
 
           <p>
-            Epsilon strongly affects the resulting cluster structure and the number of observations classified as noise, so it was estimated from the \(k\)-distance graph, which shows the distance of each observation to its \(k\)-th nearest neighbor [4].
+            Epsilon strongly affects the resulting cluster structure and the number of observations classified as noise, so it was estimated from the \(k\)-distance graph, which shows the distance of each observation to its \(k\)-th nearest neighbor [16], [17].
           </p>
 
           <p>
@@ -826,7 +826,7 @@
           </p>
 
           <p>
-            This procedure is a simplified version of the Kneedle algorithm [5]: it omits Kneedle's local-maximum detection and sensitivity thresholding, and is therefore treated as a maximum-deviation knee-selection heuristic rather than a direct implementation of Kneedle.
+            This procedure is a simplified version of the Kneedle algorithm [18]: it omits Kneedle's local-maximum detection and sensitivity thresholding, and is therefore treated as a maximum-deviation knee-selection heuristic rather than a direct implementation of Kneedle.
           </p>
 
           <h6 class="title is-6">Neighborhood Identification</h6>
@@ -896,12 +896,12 @@
 
           <h5 class="title is-5">Metric 1: Silhouette Score</h5>
           <p>
-            The Silhouette Score quantifies how well each observation fits its assigned cluster by contrasting its within-cluster cohesion with its separation from the nearest other cluster [14]. It ranges from &minus;1 to +1: values near +1 indicate compact, well-separated clusters, values near 0 indicate borderline assignments, and negative values indicate possible misclassification [15]. Higher values are better.
+            The Silhouette Score quantifies how well each observation fits its assigned cluster by contrasting its within-cluster cohesion with its separation from the nearest other cluster [19]. It ranges from &minus;1 to +1: values near +1 indicate compact, well-separated clusters, values near 0 indicate borderline assignments, and negative values indicate possible misclassification [20]. Higher values are better.
           </p>
 
           <h5 class="title is-5">Metric 2: Davies-Bouldin Index</h5>
           <p>
-            The Davies-Bouldin Index (DBI) is the average similarity between each cluster and its most similar cluster, computed from cluster centroids and within-cluster dispersion [20]. Lower values indicate more compact and better-separated clusters.
+            The Davies-Bouldin Index (DBI) is the average similarity between each cluster and its most similar cluster, computed from cluster centroids and within-cluster dispersion [21]. Lower values indicate more compact and better-separated clusters.
           </p>
 
           <h5 class="title is-5">Evaluation Procedure</h5>
@@ -911,7 +911,7 @@
 
           <h6 class="title is-6">Hyperparameter Selection: Cluster Count Evaluation</h6>
           <p>
-            Because the two metrics can disagree on which configuration is best, rank aggregation was used to combine them [26]. In the Borda Count, alternatives are scored by their positions in each ranking, which is equivalent to choosing the lowest sum of ranks when all rankings contain the same alternatives [27].
+            Because the two metrics can disagree on which configuration is best, rank aggregation was used to combine them [22]. In the Borda Count, alternatives are scored by their positions in each ranking, which is equivalent to choosing the lowest sum of ranks when all rankings contain the same alternatives [23].
           </p>
 
           <p>
@@ -956,7 +956,7 @@
         <h2 class="title is-3">Results and Discussion</h2>
           <div class="content has-text-justified">
 
-          <h3 class="title is-4">1. Hyperparameter Selection</h3>
+          <h3 class="title is-4">Hyperparameter Selection</h3>
 
           <p>
           Each candidate was evaluated over the twelve monthly datasets. Silhouette ranks were assigned in descending order, whereas Davies–Bouldin Index (DBI) ranks were assigned in ascending order. The combined rank was calculated as
@@ -1064,7 +1064,7 @@
           <p>
           DBSCAN produced one non-noise cluster in every month. Consequently, both internal metrics were undefined rather than zero, because the evaluator requires at least two non-noise clusters.
           </p>
-          <h3 class="title is-4">2. Per-Algorithm Results</h3>
+          <h3 class="title is-4">Per-Algorithm Results</h3>
 
           <p>
           The following table reports the cluster memberships for the selected configuration of each algorithm. Cluster numbers are method-specific labels; therefore, identical numbers in different algorithms do not imply identical clusters.
@@ -1092,7 +1092,7 @@
           K-means repeatedly isolated CAR and REGION 2, while BARMM, REGION 10, and REGION 12 frequently formed a recurring group. Hierarchical clustering produced more stable five-cluster structures, especially the repeated pair CAR–REGION 2 and the recurring MIMAROPA–NIR–REGION 6–REGION 7 grouping. GMM produced more fragmented assignments because its selected component count was large relative to the 18 observations. DBSCAN generally treated the dataset as one connected density component and therefore did not provide multi-cluster regionalization.
           </p>
 
-          <h3 class="title is-4">3. Algorithm Comparison</h3>
+          <h3 class="title is-4">Algorithm Comparison</h3>
 
           <p>
           Table 5 compares the final assignments using the same standardized monthly feature tables. Higher Silhouette Scores and lower DBI values are preferable.
@@ -1148,7 +1148,7 @@
           The single major DBSCAN cluster is also related to the size of the dataset. Each monthly run contains only 18 regional observations in a four-dimensional standardized feature space, while MinPts is fixed at 5. With so few points, the selected epsilon can make most regions density-reachable through connected neighborhoods, causing DBSCAN to merge them into one non-noise cluster and label only a small number of observations as noise. This is a limitation of applying density-based clustering to a small sample: the method has limited information with which to distinguish separate density regimes, and its result is sensitive to small changes in epsilon or regional observations. Therefore, DBSCAN's one-cluster outcome should not be interpreted as proof that the Philippines has only one climate regime; it indicates that this parameterization and sample did not yield multiple density-separated groups.
           </p>
 
-          <h3 class="title is-4">4. Selected-Configuration Figures</h3>
+          <h3 class="title is-4">Selected-Configuration Figures</h3>
 
           <p>
           The following figures show January outputs for the final configurations selected using the twelve-month mean combined ranks. They are presented separately from the January candidate-metric tables because the displayed assignments correspond to the final mean-based configurations.
@@ -1173,10 +1173,10 @@
           <img src="./static/images/results/dbscan/JAN_clusters_4d.png" alt="January DBSCAN four-dimensional cluster plot">
           <figcaption>Figure 4. Representative January DBSCAN output using the selected epsilon and MinPts configuration.</figcaption>
           </figure>
-          <h3 class="title is-4">5. Climatological Interpretation</h3>
+          <h3 class="title is-4">Climatological Interpretation</h3>
 
           <p>
-          The recurring groupings should be interpreted as climate-profile similarities rather than as strict geographic boundaries. PAGASA describes the Philippine climate as tropical and maritime, with rainfall controlled by moisture-bearing winds, mountain systems, monsoon seasons, and tropical cyclones [28]. These controls provide a climatological basis for the observed month-to-month changes.
+          The recurring groupings should be interpreted as climate-profile similarities rather than as strict geographic boundaries. PAGASA describes the Philippine climate as tropical and maritime, with rainfall controlled by moisture-bearing winds, mountain systems, monsoon seasons, and tropical cyclones [24]. These controls provide a climatological basis for the observed month-to-month changes.
           </p>
 
           <p>
@@ -1184,75 +1184,12 @@
           </p>
 
           <p>
-          CAR was frequently isolated by K-means and separated by hierarchical clustering. This is climatologically plausible because elevation can produce a strong temperature contrast: PAGASA reports substantially cooler conditions for Baguio than for low-elevation Philippine stations [28]. The result should nevertheless be treated cautiously because CAR is represented by an area-weighted grid-cell average rather than by a station-level elevation profile.
+          CAR was frequently isolated by K-means and separated by hierarchical clustering. This is climatologically plausible because elevation can produce a strong temperature contrast: PAGASA reports substantially cooler conditions for Baguio than for low-elevation Philippine stations [24]. The result should nevertheless be treated cautiously because CAR is represented by an area-weighted grid-cell average rather than by a station-level elevation profile.
           </p>
 
           <p>
-          The changing membership of western, central, and eastern regions across months is also consistent with the seasonal reversal of monsoon influence and the country's established rainfall regimes. A recent Philippine climate-regionalization study similarly found that combining rainfall and temperature can produce climate zones that differ from traditional rainfall-only classifications [29]. The present results extend that interpretation by incorporating wind speed and solar irradiance, although the use of administrative-region averages prevents direct comparison with gridded climate zones.
+          The changing membership of western, central, and eastern regions across months is also consistent with the seasonal reversal of monsoon influence and the country's established rainfall regimes. Related climate-regionalization studies have used clustering to reassess climate-region boundaries [25], [26], and a recent Philippine study similarly found that combining rainfall and temperature can produce climate zones that differ from traditional rainfall-only classifications [27]. The present results extend that interpretation by incorporating wind speed and solar irradiance, although the use of administrative-region averages prevents direct comparison with gridded climate zones.
           </p>
-
-          <h3 class="title is-4">6. Limitations</h3>
-
-          <ul>
-          <li>The analysis contains only 18 observations per month, limiting the stability and statistical resolution of the clusters.</li>
-          <li>K-means and GMM use random initialization, and only one run was performed for each month. The resulting assignments may therefore depend on initialization.</li>
-          <li>Silhouette Score and DBI favor particular geometric assumptions, especially compact and separated clusters, and may not fully represent climatologically meaningful but overlapping regimes.</li>
-          <li>Unequal cluster sizes can affect both metrics and can make fragmented solutions appear favorable under one metric.</li>
-          <li>DBSCAN is sensitive to epsilon. Although epsilon was estimated monthly using the maximum-deviation knee-selection heuristic, the resulting values produced one non-noise cluster in every month.</li>
-          <li>DBSCAN metrics exclude noise points, so a low score would not be directly comparable with a score calculated over all 18 regions.</li>
-          <li>NASA POWER grid-cell values and area-weighted regional averages are general climate representations and may not capture local topography, coastlines, or station-level variability.</li>
-          </ul>
-
-          <h3 class="title is-4">Figures and Reproducibility Notes</h3>
-
-          <p>
-          The supplied repository contains DBSCAN k-distance, knee-deviation, maximum-deviation, three-dimensional, and scatter plots under <code>method_results/dbscan/monthly/</code>. It also contains GMM cluster plots under <code>method_results/gaussian/monthly/</code>. The selected K-means and hierarchical folders contain cluster assignments but no generated cluster plots or dendrogram images.
-          </p>
-
-          <p>
-          Additional figures that remain to be generated are the monthly Silhouette and DBI line charts, selected-run hierarchical dendrograms, and the specified precipitation-versus-temperature and wind-versus-solar scatter views for every month.
-          </p>
-
-          <pre><code>import csv
-          from pathlib import Path
-          import matplotlib.pyplot as plt
-
-          root = Path(".")
-          months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]
-          runs = {
-              "K-means": ("kmeans", "k_7"),
-              "Hierarchical": ("hierarchical", "k_5"),
-              "GMM": ("gaussian", "k_14"),
-          }
-
-          for metric, filename, ylabel in [
-              ("silhouette", "silhouette_scores.csv", "Silhouette Score"),
-              ("davies_bouldin", "davies_bouldin_scores.csv", "Davies-Bouldin Index"),
-          ]:
-              plt.figure(figsize=(10, 5))
-              for label, (method, run) in runs.items():
-                  path = root / "metric_results" / method / "monthly" / run / filename
-                  with path.open(newline="", encoding="utf-8") as f:
-                      rows = list(csv.DictReader(f))
-                  values = [float(row[metric]) for row in rows]
-                  plt.plot(months, values, marker="o", label=label)
-              plt.xlabel("Month")
-              plt.ylabel(ylabel)
-              plt.grid(alpha=0.3)
-              plt.legend()
-              plt.tight_layout()
-              plt.savefig(f"{metric}_selected_runs.png", dpi=300)
-              plt.close()
-          </code></pre>
-
-          <h3 class="title is-4">References for New Sources</h3>
-
-          <ol start="28">
-          <li>Philippine Atmospheric, Geophysical and Astronomical Services Administration, “Climate of the Philippines,” Department of Science and Technology. [Online]. Available: <a href="https://www.pagasa.dost.gov.ph/index.php/information/climate-philippines">https://www.pagasa.dost.gov.ph/index.php/information/climate-philippines</a></li>
-          <li>L. M. P. Olaguera, E. K. Badua, A. G. A. Llorin, F. A. T. Cruz, J. R. T. Villarin, J. A. Manalo, M. Q. Villafuerte, and J. Matsumoto, “Rainfall and temperature-based Philippine climate zones using self-organizing maps,” <i>Scientific Online Letters on the Atmosphere</i>, vol. 21C, pp. 10–20, 2025, doi: <a href="https://doi.org/10.2151/sola.21C-002">10.2151/sola.21C-002</a>.</li>
-          </ol>
-
-          </div>
       </div>
     </div>
     <!--/ Results and Discussion. -->
@@ -1269,31 +1206,7 @@
         <h2 class="title is-3">Conclusion</h2>
         <div class="content has-text-justified">
           <p>
-            We present the first method capable of photorealistically reconstructing a non-rigidly
-            deforming scene using photos/videos captured casually from mobile phones.
-          </p>
-          <p>
-            Our approach augments neural radiance fields
-            (NeRF) by optimizing an
-            additional continuous volumetric deformation field that warps each observed point into a
-            canonical 5D NeRF.
-            We observe that these NeRF-like deformation fields are prone to local minima, and
-            propose a coarse-to-fine optimization method for coordinate-based models that allows for
-            more robust optimization.
-            By adapting principles from geometry processing and physical simulation to NeRF-like
-            models, we propose an elastic regularization of the deformation field that further
-            improves robustness.
-          </p>
-          <p>
-            We show that <span class="dnerf">Nerfies</span> can turn casually captured selfie
-            photos/videos into deformable NeRF
-            models that allow for photorealistic renderings of the subject from arbitrary
-            viewpoints, which we dub <i>"nerfies"</i>. We evaluate our method by collecting data
-            using a
-            rig with two mobile phones that take time-synchronized photos, yielding train/validation
-            images of the same pose at different viewpoints. We show that our method faithfully
-            reconstructs non-rigidly deforming scenes and reproduces unseen views with high
-            fidelity.
+            The study applied K-means, Agglomerative Hierarchical Clustering, Gaussian Mixture Model (GMM), and DBSCAN to examine the monthly climate similarities of the 18 Philippine regions using precipitation, temperature, wind speed, and solar irradiance data from 2001 to 2025. Among the evaluated methods, Hierarchical Clustering achieved the highest mean Silhouette Score (0.330428), indicating comparatively better-defined and separated clusters, while GMM obtained the lowest mean Davies-Bouldin Index (0.640926), suggesting more favorable compactness and separation according to that metric. These results show that no single method consistently performed best across both measures. DBSCAN, meanwhile, produced only one non-noise cluster in every month, indicating that the selected parameters and limited number of observations were insufficient to identify multiple density-separated groups. Despite these limitations, the recurring regional groupings and their month-to-month changes provide insights into similarities in the climate profiles of different parts of the country. Overall, the findings demonstrate the potential of clustering techniques for exploring Philippine regional climate patterns, while emphasizing that the results should be interpreted as general similarities rather than definitive climate classifications, given the dataset's limited regional observations and spatial resolution.
           </p>
         </div>
       </div>
@@ -1302,40 +1215,7 @@
   </div>
 </section>
 
-<section class="section">
-  <div class="container is-max-desktop">
-    <!-- References. -->
-    <div class="columns is-centered">
-      <div class="column is-full-width">
-        <h2 class="title is-3">References</h2>
-        
-        <div class="content has-text-justified">
-          <p>
-            There's a lot of excellent work that was introduced around the same time as ours.
-          </p>
-          <p>
-            <a href="https://arxiv.org/abs/2104.09125">Progressive Encoding for Neural Optimization</a> introduces an idea similar to our windowed position encoding for coarse-to-fine optimization.
-          </p>
-          <p>
-            <a href="https://www.albertpumarola.com/research/D-NeRF/index.html">D-NeRF</a> and <a href="https://gvv.mpi-inf.mpg.de/projects/nonrigid_nerf/">NR-NeRF</a>
-            both use deformation fields to model non-rigid scenes.
-          </p>
-          <p>
-            Some works model videos with a NeRF by directly modulating the density, such as <a href="https://video-nerf.github.io/">Video-NeRF</a>, <a href="https://www.cs.cornell.edu/~zl548/NSFF/">NSFF</a>, and <a href="https://neural-3d-video.github.io/">DyNeRF</a>
-          </p>
-          <p>
-            There are probably many more by the time you are reading this. Check out <a href="https://dellaert.github.io/NeRF/">Frank Dellart's survey on recent NeRF papers</a>, and <a href="https://github.com/yenchenlin/awesome-NeRF">Yen-Chen Lin's curated list of NeRF papers</a>.
-          </p>
-        </div>
-      </div>
-    </div>
-    <!--/ References. -->
-    
-  </div>
-</section>
-
-
-<section class="section" id="BibTeX">
+<!-- <section class="section" id="BibTeX">
   <div class="container is-max-desktop content">
     <h2 class="title">BibTeX</h2>
     <pre><code>@article{park2021nerfies,
@@ -1345,8 +1225,62 @@
       year      = {2021},
     }</code></pre>
   </div>
-</section>
+</section> -->
 
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- References. -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">References</h2>
+        <div class="content has-text-justified">
+          <ol>
+          <li>Philippine Statistics Authority, “Second Quarter 2024 PSGC Updates: Creation of the Negros Island Region and Correction of the Names of Two Barangays,” July 12, 2024. [Online]. Available: <a href="https://psa.gov.ph/content/second-quarter-2024-psgc-updates-creation-negros-island-region-and-correction-names-two">https://psa.gov.ph/content/second-quarter-2024-psgc-updates-creation-negros-island-region-and-correction-names-two</a>. [Accessed: Nov. 3, 2026].</li>
+          <li>P. Stackhouse, “NASA POWER | Docs | Methodology,” NASA, 2026. [Online]. Available: <a href="https://power.larc.nasa.gov/docs/methodology/">https://power.larc.nasa.gov/docs/methodology/</a>. [Accessed: Nov. 3, 2026].</li>
+          <li>Vento Maritime, “The Difference in Weather Between Land and Sea.” [Online]. Available: <a href="https://ventomaritime.dk/blog/difference-weather-between-land-and-sea">https://ventomaritime.dk/blog/difference-weather-between-land-and-sea</a>. [Accessed: Nov. 15, 2026].</li>
+          <li>Esri, “Spatial Aggregation—ArcGIS Insights Documentation.” [Online]. Available: <a href="https://doc.arcgis.com/en/insights/latest/analyze/spatial-aggregation.htm">https://doc.arcgis.com/en/insights/latest/analyze/spatial-aggregation.htm</a>. [Accessed: Nov. 15, 2026].</li>
+          <li>J. Faeldon, “philippines-json-maps,” version 1.1.1, GitHub, 2026. [Source code]. Available: <a href="https://github.com/faeldon/philippines-json-maps">https://github.com/faeldon/philippines-json-maps</a>. [Accessed: Nov. 15, 2026].</li>
+          <li>M. E. Celebi, H. A. Kingravi, and P. A. Vela, “A comparative study of efficient initialization methods for the k-means clustering algorithm,” <i>Expert Systems with Applications</i>, vol. 40, no. 1, pp. 200–210, 2013, doi: <a href="https://doi.org/10.1016/j.eswa.2012.07.021">10.1016/j.eswa.2012.07.021</a>.</li>
+          <li>C. Wongoutong, “The Impact of Neglecting Feature Scaling in K-Means Clustering,” <i>PLOS ONE</i>, vol. 19, no. 12, p. e0310839, Dec. 2024, doi: <a href="https://doi.org/10.1371/journal.pone.0310839">10.1371/journal.pone.0310839</a>.</li>
+          <li>J. Raymaekers and R. H. Zamar, “Pooled Variable Scaling for Cluster Analysis,” <i>Bioinformatics</i>, vol. 36, no. 12, pp. 3849–3855, June 2020, doi: <a href="https://doi.org/10.1093/bioinformatics/btaa243">10.1093/bioinformatics/btaa243</a>.</li>
+          <li>I. B. Mohamad and D. Usman, “Standardization and its effects on K-means clustering algorithm,” <i>Research Journal of Applied Sciences, Engineering and Technology</i>, vol. 6, no. 17, pp. 3299–3303, Sept. 2013, doi: <a href="https://doi.org/10.19026/rjaset.6.3638">10.19026/rjaset.6.3638</a>.</li>
+          <li>Python Software Foundation, “random—Generate pseudo-random numbers,” <i>Python 3 Documentation</i>. [Online]. Available: <a href="https://docs.python.org/3/library/random.html">https://docs.python.org/3/library/random.html</a>. [Accessed: Nov. 3, 2026].</li>
+          <li>D. Müllner, “Modern Hierarchical, Agglomerative Clustering Algorithms,” arXiv:1109.2378 [cs, stat], Sept. 2011. [Online]. Available: <a href="https://arxiv.org/abs/1109.2378">https://arxiv.org/abs/1109.2378</a>. [Accessed: Nov. 3, 2026].</li>
+          <li>F. Murtagh and P. Contreras, “Algorithms for Hierarchical Clustering: An Overview,” <i>WIREs Data Mining and Knowledge Discovery</i>, vol. 2, no. 1, pp. 86–97, Dec. 2011, doi: <a href="https://doi.org/10.1002/widm.53">10.1002/widm.53</a>.</li>
+          <li>scikit-learn, “Plot Hierarchical Clustering Dendrogram.” [Online]. Available: <a href="https://scikit-learn.org/stable/auto_examples/cluster/plot_agglomerative_dendrogram.html">https://scikit-learn.org/stable/auto_examples/cluster/plot_agglomerative_dendrogram.html</a>. [Accessed: Nov. 3, 2026].</li>
+          <li>J. Noble, “What Is a Gaussian Mixture Model?,” IBM, Oct. 16, 2025. [Online]. Available: <a href="https://www.ibm.com/think/topics/gaussian-mixture-model">https://www.ibm.com/think/topics/gaussian-mixture-model</a>. [Accessed: Nov. 10, 2026].</li>
+          <li>scikit-learn, “GMM Initialization Methods,” 2024. [Online]. Available: <a href="https://scikit-learn.org/stable/auto_examples/mixture/plot_gmm_init.html">https://scikit-learn.org/stable/auto_examples/mixture/plot_gmm_init.html</a>. [Accessed: Nov. 10, 2026].</li>
+          <li>GeeksforGeeks, “DBSCAN clustering in ML—Density based clustering,” May 2, 2026. [Online]. Available: <a href="https://www.geeksforgeeks.org/machine-learning/dbscan-clustering-in-ml-density-based-clustering/">https://www.geeksforgeeks.org/machine-learning/dbscan-clustering-in-ml-density-based-clustering/</a>. [Accessed: Nov. 10, 2026].</li>
+          <li>L. Yin, H. Hu, K. Li, G. Zheng, Y. Qu, and H. Chen, “Improvement of DBSCAN algorithm based on K-dist graph for adaptive determining parameters,” <i>Electronics</i>, vol. 12, no. 15, Art. no. 3213, July 2023, doi: <a href="https://doi.org/10.3390/electronics12153213">10.3390/electronics12153213</a>.</li>
+          <li>V. Satopää, J. Albrecht, D. Irwin, and B. Raghavan, “Finding a ‘Kneedle’ in a haystack: Detecting knee points in system behavior,” in <i>Proc. 2011 31st Int. Conf. Distributed Computing Systems Workshops</i>, 2011, pp. 166–171.</li>
+          <li>P. J. Rousseeuw, “Silhouettes: A Graphical Aid to the Interpretation and Validation of Cluster Analysis,” <i>Journal of Computational and Applied Mathematics</i>, vol. 20, pp. 53–65, Nov. 1987, doi: <a href="https://doi.org/10.1016/0377-0427(87)90125-7">10.1016/0377-0427(87)90125-7</a>.</li>
+          <li>K. R. Shahapure and C. Nicholas, “Cluster Quality Analysis Using Silhouette Score,” in <i>2020 IEEE 7th International Conference on Data Science and Advanced Analytics (DSAA)</i>, Oct. 2020, doi: <a href="https://doi.org/10.1109/dsaa49011.2020.00096">10.1109/dsaa49011.2020.00096</a>.</li>
+          <li>D. L. Davies and D. W. Bouldin, “A Cluster Separation Measure,” <i>IEEE Transactions on Pattern Analysis and Machine Intelligence</i>, vol. PAMI-1, no. 2, pp. 224–227, Apr. 1979, doi: <a href="https://doi.org/10.1109/tpami.1979.4766909">10.1109/tpami.1979.4766909</a>.</li>
+          <li>P. Viappiani, “Characterization of Scoring Rules With Distances: Application to the Clustering of Rankings,” in <i>Proc. IJCAI</i>, pp. 104–109, 2015. [Online]. Available: <a href="https://ijcai.org/proceedings/2015/22">https://ijcai.org/proceedings/2015/22</a>. [Accessed: Nov. 4, 2026].</li>
+          <li>M. Cebesoy, C. Tuncer Şakar, and B. Yet, “Multicriteria Decision Support Under Uncertainty: Combining Outranking Methods With Bayesian Networks,” <i>Annals of Operations Research</i>, vol. 355, no. 3, pp. 2971–2998, June 2024, doi: <a href="https://doi.org/10.1007/s10479-024-06064-8">10.1007/s10479-024-06064-8</a>.</li>
+          <li>Philippine Atmospheric, Geophysical and Astronomical Services Administration, “Climate of the Philippines,” Department of Science and Technology. [Online]. Available: <a href="https://www.pagasa.dost.gov.ph/index.php/information/climate-philippines">https://www.pagasa.dost.gov.ph/index.php/information/climate-philippines</a>.</li>
+          <li>R. Lund and B. Li, “Revisiting Climate Region Definitions via Clustering,” <i>Journal of Climate</i>, vol. 22, no. 7, pp. 1787–1800, Apr. 2009, doi: <a href="https://doi.org/10.1175/2008jcli2455.1">10.1175/2008jcli2455.1</a>.</li>
+          <li>S. Fiddes, A. Pepler, K. Saunders, and P. Hope, “Redefining Southern Australia’s Climatic Regions and Seasons,” <i>Journal of Southern Hemisphere Earth Systems Science</i>, vol. 71, no. 1, pp. 92–109, Mar. 2021, doi: <a href="https://doi.org/10.1071/es20003">10.1071/es20003</a>.</li>
+          <li>L. M. P. Olaguera, E. K. Badua, A. G. A. Llorin, F. A. T. Cruz, J. R. T. Villarin, J. A. Manalo, M. Q. Villafuerte, and J. Matsumoto, “Rainfall and temperature-based Philippine climate zones using self-organizing maps,” <i>Scientific Online Letters on the Atmosphere</i>, vol. 21C, pp. 10–20, 2025, doi: <a href="https://doi.org/10.2151/sola.21C-002">10.2151/sola.21C-002</a>.</li>
+          <li>P. Stackhouse, “NASA POWER | Docs | Tutorials | DAV,” NASA, 2022. [Online]. Available: <a href="https://power.larc.nasa.gov/docs/tutorials/data-access-viewer/user-guide/">https://power.larc.nasa.gov/docs/tutorials/data-access-viewer/user-guide/</a>. [Accessed: Nov. 3, 2026].</li>
+          <li>B. N. Yulisasih, H. Herman, S. Sunardi, and H. Yuliansyah, “Evaluation of K-Means Clustering Using Silhouette Score Method on Customer Segmentation,” <i>ILKOM Jurnal Ilmiah</i>, vol. 16, no. 3, pp. 330–342, Dec. 2024, doi: <a href="https://doi.org/10.33096/ilkom.v16i3.2325.330-342">10.33096/ilkom.v16i3.2325.330-342</a>.</li>
+          <li>Y. Januzaj, E. Beqiri, and A. Luma, “Determining the Optimal Number of Clusters Using Silhouette Score as a Data Mining Technique,” <i>International Journal of Online and Biomedical Engineering</i>, vol. 19, no. 4, pp. 174–182, Apr. 2023, doi: <a href="https://doi.org/10.3991/ijoe.v19i04.37059">10.3991/ijoe.v19i04.37059</a>.</li>
+          <li>Z. Teng, Y. Jun, L. Dandan, and P. Zhang, “When Does the Silhouette Score Work? A Comprehensive Study in Network Clustering,” arXiv:2512.24841v1, Dec. 2025. [Online]. Available: <a href="https://arxiv.org/abs/2512.24841v1">https://arxiv.org/abs/2512.24841v1</a>. [Accessed: Nov. 3, 2026].</li>
+          <li>J. Pavlopoulos, G. Vardakas, and A. Likas, “Revisiting Silhouette Aggregation,” arXiv:2401.05831v3, Jan. 2024. [Online]. Available: <a href="https://arxiv.org/abs/2401.05831v3">https://arxiv.org/abs/2401.05831v3</a>. [Accessed: Nov. 3, 2026].</li>
+          <li>Y. A. Wijaya, D. A. Kurniady, E. Setyanto, W. S. Tarihoran, D. Rusmana, and R. Rahim, “Davies Bouldin Index Algorithm for Optimizing Clustering Case Studies Mapping School Facilities,” <i>TEM Journal</i>, vol. 10, no. 3, pp. 1099–1103, Aug. 2021, doi: <a href="https://doi.org/10.18421/tem103-13">10.18421/tem103-13</a>.</li>
+          <li>M. Mughnyanti, S. Efendi, and M. Zarlis, “Analysis of Determining Centroid Clustering X-Means Algorithm With Davies-Bouldin Index Evaluation,” <i>IOP Conference Series: Materials Science and Engineering</i>, vol. 725, no. 1, p. 012128, Jan. 2020, doi: <a href="https://doi.org/10.1088/1757-899x/725/1/012128">10.1088/1757-899x/725/1/012128</a>.</li>
+          <li>A. Anfossi and D. Chicco, “An Easy Guide to the Davies-Bouldin Index for Unsupervised Internal Clustering Evaluation,” <i>Discover Computing</i>, vol. 29, no. 1, Art. no. 212, Apr. 2026, doi: <a href="https://doi.org/10.1007/s10791-026-10094-0">10.1007/s10791-026-10094-0</a>.</li>
+          <li>L. W. Yerbury, R. J. G. B. Campello, G. C. Livingston, Jr., M. Goldsworthy, and L. O’Neil, “On the Use of Relative Validity Indices for Comparing Clustering Approaches,” <i>ACM Transactions on Knowledge Discovery from Data</i>, vol. 19, no. 8, pp. 1–53, Sept. 2025, doi: <a href="https://doi.org/10.1145/3748726">10.1145/3748726</a>.</li>
+          <li>D. Chicco, G. Sabino, L. Oneto, and G. Jurman, “The DBCV Index Is More Informative Than DCSI, CDbw, and VIASCKDE Indices for Unsupervised Clustering Internal Assessment of Concave-Shaped and Density-Based Clusters,” <i>PeerJ Computer Science</i>, vol. 11, Art. no. e3095, Aug. 2025, doi: <a href="https://doi.org/10.7717/peerj-cs.3095">10.7717/peerj-cs.3095</a>.</li>
+          <li>G. Marek, B. Maciej, and A. Cena, “Are Cluster Validity Measures (in)Valid?,” Aug. 2, 2022, doi: <a href="https://doi.org/10.1016/j.ins.2021.10.004">10.1016/j.ins.2021.10.004</a>.</li>
+          <li>scikit-learn, “2.3. Clustering—scikit-learn Documentation.” [Online]. Available: <a href="https://scikit-learn.org/stable/modules/clustering.html">https://scikit-learn.org/stable/modules/clustering.html</a>. [Accessed: Nov. 10, 2026].</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+    <!-- /References. -->
+  </div>
+</section>
 
 <footer class="footer">
   <div class="container">
