@@ -289,7 +289,9 @@ def main():
         summaries.extend(run_gmm(regions, monthly_values))
         print("\nRunning DBSCAN once per month...")
         summaries.extend(run_dbscan(regions, monthly_values))
-        save_summary(summaries)
+        
+        print(summaries)
+        # save_summary(summaries)
     except (OSError, ValueError, RuntimeError) as error:
         raise SystemExit(f"Clustering sweep stopped: {error}") from error
 

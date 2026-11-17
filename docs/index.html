@@ -290,34 +290,35 @@
           <h4 class="title is-4">Overview</h4>
           <div class="content has-text-centered">
             <p class="mermaid">
-flowchart TD
-    A([Start]) --> B[/Gather Data/]
-    B --> C[Process Data]
-    C --> D[Run Clustering Methods]
+              flowchart TD
+                  A([Start]) --> B[/Gather Data/]
+                  B --> C[Compute monthly regional averages and standardize four features]
+                  C --> D[Run clustering sweeps for each month]
 
-    D --> E[K-means]
-    D --> F[Hierarchical Clustering]
-    D --> G[Gaussian Mixture Model]
-    D --> H[DBSCAN]
+                  D --> E[K-means]
+                  D --> F[Hierarchical Clustering]
+                  D --> G[Gaussian Mixture Model]
+                  D --> H[DBSCAN]
 
-    E --> I[Test different k values]
-    F --> J[Test different dendrogram cuts]
-    G --> K[Test different numbers of components]
+                  E --> I[Test different k values]
+                  F --> J[Test different dendrogram cuts]
+                  G --> K[Test different numbers of components]
 
-    I --> M[Rank configurations by Silhouette Score and DBI, then sum the ranks]
-    J --> M
-    K --> M
+                  I --> M[Evaluate every candidate for each month]
+                  J --> M
+                  K --> M
+                  M --> N[Calculate twelve-month mean Silhouette and DBI]
+                  N --> O[Rank candidates and sum ranks]
+                  O --> P[Select final configurations and export results]
 
-    H --> L[Tune eps and min_samples]
-    L --> N[Apply Maximum-Deviation Knee-Selection Heuristic]
+                  H --> L[Calculate monthly epsilon with the maximum-deviation knee-selection heuristic]
+                  L --> Q[Use fixed MinPts = 5 and evaluate DBSCAN]
+                  Q --> R[Export epsilon, assignments, noise, and metrics]
 
-    M --> O[Select promising configurations]
-    N --> O
-    O --> P[/Export selected results/]
-    P --> Q[Evaluate selected clustering methods]
-    Q --> R[Calculate Silhouette Score and DBI]
-    R --> S[Compare and Analyze Results]
-    S --> U([End])
+                  P --> S[Compare final assignments for each month]
+                  R --> S
+                  S --> T[Analyze monthly results]
+                  T --> U([End])
             </p>
           </div>
 
@@ -932,7 +933,7 @@ flowchart TD
           </ul>
 
           <p>
-            The configuration with the lowest combined rank was selected. This procedure was applied to K-means, Hierarchical Clustering, and the Gaussian Mixture Model, since each assigns every observation to a cluster and their configurations can therefore be compared on the same set of observations.
+            For K-means, Hierarchical Clustering, and the Gaussian Mixture Model, each candidate was evaluated independently for all twelve months. The mean Silhouette Score and mean DBI across the twelve monthly runs were ranked, and the configuration with the lowest combined rank was selected for the final monthly assignments. This procedure was applied to these three algorithms because each assigns every observation to a cluster and their configurations can therefore be compared on the same set of observations.
           </p>
 
           <p>
@@ -953,13 +954,299 @@ flowchart TD
     <div class="columns is-centered">
       <div class="column is-full-width">
         <h2 class="title is-3">Results and Discussion</h2>
-        <div class="content has-text-justified">
-          <!-- TODO: The previous content here was leftover NeRF/Nerfies template text
-               (D-NeRF, NR-NeRF, Video-NeRF, etc.) unrelated to this study and was removed. -->
+          <div class="content has-text-justified">
+
+          <h3 class="title is-4">1. Hyperparameter Selection</h3>
+
           <p>
-            Results and discussion will be added here.
+          The tables below show the candidate metrics for January only. For the final configuration, each candidate was evaluated over all twelve monthly datasets; the twelve-month mean Silhouette and DBI values were ranked, and the two ranks were summed. Silhouette ranks were assigned in descending order, whereas Davies–Bouldin Index (DBI) ranks were assigned in ascending order. The combined rank was calculated as
+          \(R_{\text{total}}=R_{\text{silhouette}}+R_{\text{DBI}}\).
+          The final configuration was selected using the lowest combined rank based on these twelve-month means. Candidates with one or 18 clusters were not scoreable because the evaluator requires at least two clusters and fewer clusters than observations.
           </p>
-        </div>
+
+          <h4 class="title is-5">K-means</h4>
+          <table class="table is-bordered is-striped">
+          <thead><tr><th>k</th><th>January Silhouette</th><th>January Silhouette Rank</th><th>January DBI</th><th>January DBI Rank</th><th>January Combined Rank</th></tr></thead>
+          <tbody>
+          <tr><td>2</td><td>0.296908</td><td>2</td><td>0.880248</td><td>14</td><td>16</td></tr>
+          <tr><td>3</td><td>0.304591</td><td>1</td><td>0.968645</td><td>16</td><td>17</td></tr>
+          <tr><td>4</td><td>0.286243</td><td>3</td><td>0.896300</td><td>15</td><td>18</td></tr>
+          <tr><td>5</td><td>0.253225</td><td>4</td><td>0.862683</td><td>13</td><td>17</td></tr>
+          <tr><td>6</td><td>0.186053</td><td>9</td><td>0.640844</td><td>8</td><td>17</td></tr>
+          <tr><td>7</td><td>0.237211</td><td>5</td><td>0.740501</td><td>12</td><td>17</td></tr>
+          <tr><td>8</td><td>0.232080</td><td>6</td><td>0.695132</td><td>10</td><td>16</td></tr>
+          <tr><td>9</td><td>0.202813</td><td>7</td><td>0.691370</td><td>9</td><td>16</td></tr>
+          <tr><td>10</td><td>0.165009</td><td>10</td><td>0.697592</td><td>11</td><td>21</td></tr>
+          <tr><td><strong>11</strong></td><td>0.195496</td><td>8</td><td>0.516091</td><td>6</td><td><strong>14</strong></td></tr>
+          <tr><td>12</td><td>0.116790</td><td>11</td><td>0.572650</td><td>7</td><td>18</td></tr>
+          <tr><td>13</td><td>0.067192</td><td>13</td><td>0.453663</td><td>4</td><td>17</td></tr>
+          <tr><td>14</td><td>0.035124</td><td>14</td><td>0.458105</td><td>5</td><td>19</td></tr>
+          <tr><td>15</td><td>0.075791</td><td>12</td><td>0.403049</td><td>3</td><td>15</td></tr>
+          <tr><td>16</td><td>0.031158</td><td>15</td><td>0.341010</td><td>2</td><td>17</td></tr>
+          <tr><td>17</td><td>-0.016501</td><td>16</td><td>0.325405</td><td>1</td><td>17</td></tr>
+          </tbody>
+          </table>
+          <p>
+          The selected K-means configuration was \(k=7\), which obtained the lowest twelve-month mean combined rank of 14. The January-only table is shown for illustration and does not replace the twelve-month selection basis.
+          </p>
+
+          <h4 class="title is-5">Hierarchical Clustering</h4>
+          <table class="table is-bordered is-striped">
+          <thead><tr><th>k</th><th>January Silhouette</th><th>January Silhouette Rank</th><th>January DBI</th><th>January DBI Rank</th><th>January Combined Rank</th></tr></thead>
+          <tbody>
+          <tr><td>2</td><td>0.320444</td><td>1</td><td>1.024370</td><td>16</td><td>17</td></tr>
+          <tr><td>3</td><td>0.301278</td><td>4</td><td>0.913877</td><td>15</td><td>19</td></tr>
+          <tr><td>4</td><td>0.257051</td><td>6</td><td>0.679287</td><td>12</td><td>18</td></tr>
+          <tr><td><strong>5</strong></td><td>0.307323</td><td>3</td><td>0.745944</td><td>13</td><td><strong>16</strong></td></tr>
+          <tr><td>6</td><td>0.307854</td><td>2</td><td>0.770467</td><td>14</td><td><strong>16</strong></td></tr>
+          <tr><td>7</td><td>0.273446</td><td>5</td><td>0.650662</td><td>11</td><td><strong>16</strong></td></tr>
+          <tr><td>8</td><td>0.248065</td><td>7</td><td>0.600664</td><td>10</td><td>17</td></tr>
+          <tr><td>9</td><td>0.242679</td><td>8</td><td>0.529361</td><td>9</td><td>17</td></tr>
+          <tr><td>10</td><td>0.205781</td><td>11</td><td>0.447473</td><td>8</td><td>19</td></tr>
+          <tr><td>11</td><td>0.240028</td><td>9</td><td>0.413370</td><td>7</td><td><strong>16</strong></td></tr>
+          <tr><td>12</td><td>0.237117</td><td>10</td><td>0.389555</td><td>6</td><td><strong>16</strong></td></tr>
+          <tr><td>13</td><td>0.188943</td><td>12</td><td>0.345901</td><td>5</td><td>17</td></tr>
+          <tr><td>14</td><td>0.156845</td><td>13</td><td>0.296714</td><td>4</td><td>17</td></tr>
+          <tr><td>15</td><td>0.129542</td><td>14</td><td>0.206213</td><td>3</td><td>17</td></tr>
+          <tr><td>16</td><td>0.118498</td><td>15</td><td>0.150233</td><td>2</td><td>17</td></tr>
+          <tr><td>17</td><td>0.070974</td><td>16</td><td>0.103588</td><td>1</td><td>17</td></tr>
+          </tbody>
+          </table>
+          <p>
+          The selected configuration was average linkage with \(k=5\), producing the lowest twelve-month mean combined rank of 15. Several configurations tie in the January-only table, so January is not used as the final selection basis.
+          </p>
+
+          <h4 class="title is-5">Gaussian Mixture Model</h4>
+          <table class="table is-bordered is-striped">
+          <thead><tr><th>Components</th><th>January Silhouette</th><th>January Silhouette Rank</th><th>January DBI</th><th>January DBI Rank</th><th>January Combined Rank</th></tr></thead>
+          <tbody>
+          <tr><td>2</td><td>0.091330</td><td>3</td><td>2.290070</td><td>14</td><td>17</td></tr>
+          <tr><td>3</td><td>0.169868</td><td>1</td><td>1.490954</td><td>13</td><td>14</td></tr>
+          <tr><td>4</td><td>0.043573</td><td>5</td><td>2.472320</td><td>16</td><td>21</td></tr>
+          <tr><td>5</td><td>0.142511</td><td>2</td><td>1.341654</td><td>12</td><td>14</td></tr>
+          <tr><td>6</td><td>0.034856</td><td>6</td><td>3.016285</td><td>17</td><td>23</td></tr>
+          <tr><td>7</td><td>0.078430</td><td>4</td><td>1.028478</td><td>8</td><td><strong>12</strong></td></tr>
+          <tr><td>8</td><td>-0.034703</td><td>8</td><td>1.211007</td><td>11</td><td>19</td></tr>
+          <tr><td>9</td><td>-0.130566</td><td>17</td><td>2.433872</td><td>15</td><td>32</td></tr>
+          <tr><td>10</td><td>-0.042664</td><td>9</td><td>1.052454</td><td>9</td><td>18</td></tr>
+          <tr><td>11</td><td>-0.046413</td><td>10</td><td>1.154257</td><td>10</td><td>20</td></tr>
+          <tr><td>12</td><td>-0.076846</td><td>14</td><td>0.778843</td><td>6</td><td>20</td></tr>
+          <tr><td>13</td><td>-0.092802</td><td>16</td><td>0.863641</td><td>7</td><td>23</td></tr>
+          <tr><td>14</td><td>-0.003029</td><td>7</td><td>0.497826</td><td>3</td><td><strong>10</strong></td></tr>
+          <tr><td>15</td><td>-0.092565</td><td>15</td><td>0.626341</td><td>4</td><td>19</td></tr>
+          <tr><td>16</td><td>-0.057429</td><td>13</td><td>0.653298</td><td>5</td><td>18</td></tr>
+          <tr><td>17</td><td>-0.051525</td><td>11</td><td>0.476838</td><td>1</td><td>12</td></tr>
+          <tr><td>18</td><td>-0.051525</td><td>12</td><td>0.476838</td><td>2</td><td>14</td></tr>
+          </tbody>
+          </table>
+          <p>
+          The selected GMM configuration used 14 components, producing the lowest twelve-month mean combined rank of 12. The January-only table has a different ranking and is included only as a month-specific view.
+          </p>
+
+          <h4 class="title is-5">DBSCAN</h4>
+          <table class="table is-bordered is-striped">
+          <thead><tr><th>Month</th><th>Estimated epsilon</th><th>MinPts</th><th>Noise proportion</th><th>Non-noise clusters</th></tr></thead>
+          <tbody>
+          <tr><td>JAN</td><td>1.869036</td><td>5</td><td>0.166667</td><td>1</td></tr>
+          <tr><td>FEB</td><td>1.903757</td><td>5</td><td>0.055556</td><td>1</td></tr>
+          <tr><td>MAR</td><td>1.749886</td><td>5</td><td>0.111111</td><td>1</td></tr>
+          <tr><td>APR</td><td>2.063617</td><td>5</td><td>0.000000</td><td>1</td></tr>
+          <tr><td>MAY</td><td>1.831632</td><td>5</td><td>0.000000</td><td>1</td></tr>
+          <tr><td>JUN</td><td>1.814130</td><td>5</td><td>0.111111</td><td>1</td></tr>
+          <tr><td>JUL</td><td>2.317628</td><td>5</td><td>0.111111</td><td>1</td></tr>
+          <tr><td>AUG</td><td>2.253173</td><td>5</td><td>0.000000</td><td>1</td></tr>
+          <tr><td>SEP</td><td>1.756809</td><td>5</td><td>0.111111</td><td>1</td></tr>
+          <tr><td>OCT</td><td>2.088296</td><td>5</td><td>0.000000</td><td>1</td></tr>
+          <tr><td>NOV</td><td>2.211725</td><td>5</td><td>0.000000</td><td>1</td></tr>
+          <tr><td>DEC</td><td>2.300285</td><td>5</td><td>0.000000</td><td>1</td></tr>
+          </tbody>
+          </table>
+          <p>
+          DBSCAN produced one non-noise cluster in every month. Consequently, both internal metrics were undefined rather than zero, because the evaluator requires at least two non-noise clusters.
+          </p>
+          <h3 class="title is-4">2. Per-Algorithm Results</h3>
+
+          <p>
+          The following table reports the cluster memberships for the selected configuration of each algorithm. Cluster numbers are method-specific labels; therefore, identical numbers in different algorithms do not imply identical clusters.
+          </p>
+
+          <table class="table is-bordered is-striped">
+          <thead><tr><th>Month</th><th>K-means, k=7</th><th>Hierarchical, k=5</th><th>GMM, 14 components</th><th>DBSCAN</th></tr></thead>
+          <tbody>
+          <tr><td>JAN</td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 12, REGION 9</li><li><strong>Cluster 2:</strong> CAR</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 4-A, REGION 6, REGION 7</li><li><strong>Cluster 4:</strong> NCR, REGION 1, REGION 10, REGION 3</li><li><strong>Cluster 5:</strong> REGION 11, REGION 13</li><li><strong>Cluster 6:</strong> REGION 2</li><li><strong>Cluster 7:</strong> REGION 5, REGION 8</li></ol></td><td><ol><li><strong>Cluster 1:</strong> BARMM, NCR, REGION 1, REGION 10, REGION 11, REGION 12, REGION 3, REGION 4-A</li><li><strong>Cluster 2:</strong> CAR, REGION 2</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 6, REGION 7, REGION 9</li><li><strong>Cluster 4:</strong> REGION 13</li><li><strong>Cluster 5:</strong> REGION 5, REGION 8</li></ol></td><td><ol><li><strong>Cluster 1:</strong> MIMAROPA, NIR, REGION 4-A</li><li><strong>Cluster 2:</strong> REGION 11, REGION 6, REGION 7</li><li><strong>Cluster 3:</strong> REGION 13, REGION 5, REGION 8</li><li><strong>Cluster 4:</strong> BARMM, NCR, REGION 12, REGION 2, REGION 3</li><li><strong>Cluster 5:</strong> CAR, REGION 1, REGION 10, REGION 9</li></ol></td><td><ol><li><strong>Cluster 1:</strong> all regions except CAR, REGION 13, REGION 8</li><li><strong>Noise:</strong> CAR, REGION 13, REGION 8</li></ol></td></tr>
+          <tr><td>FEB</td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 12, REGION 3</li><li><strong>Cluster 2:</strong> CAR</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 6, REGION 7</li><li><strong>Cluster 4:</strong> NCR, REGION 10, REGION 11, REGION 13, REGION 4-A</li><li><strong>Cluster 5:</strong> REGION 1, REGION 9</li><li><strong>Cluster 6:</strong> REGION 2</li><li><strong>Cluster 7:</strong> REGION 5, REGION 8</li></ol></td><td><ol><li><strong>Cluster 1:</strong> BARMM, NCR, REGION 1, REGION 10, REGION 11, REGION 12, REGION 3, REGION 4-A</li><li><strong>Cluster 2:</strong> CAR, REGION 2</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 6, REGION 7, REGION 9</li><li><strong>Cluster 4:</strong> REGION 13</li><li><strong>Cluster 5:</strong> REGION 5, REGION 8</li></ol></td><td><ol><li><strong>Cluster 1:</strong> NIR, REGION 5, REGION 8</li><li><strong>Cluster 2:</strong> REGION 11, REGION 13, REGION 3, REGION 4-A</li><li><strong>Cluster 3:</strong> MIMAROPA, REGION 1, REGION 6, REGION 7</li><li><strong>Cluster 4:</strong> CAR, NCR, REGION 10, REGION 2</li><li><strong>Cluster 5:</strong> BARMM, REGION 12, REGION 9</li></ol></td><td><ol><li><strong>Cluster 1:</strong> all regions except REGION 13</li><li><strong>Noise:</strong> REGION 13</li></ol></td></tr>
+          <tr><td>MAR</td><td><ol><li><strong>Cluster 1:</strong> BARMM, NCR, REGION 12</li><li><strong>Cluster 2:</strong> CAR, REGION 10</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 4-A, REGION 6, REGION 7</li><li><strong>Cluster 4:</strong> REGION 1, REGION 3, REGION 9</li><li><strong>Cluster 5:</strong> REGION 11, REGION 13</li><li><strong>Cluster 6:</strong> REGION 2</li><li><strong>Cluster 7:</strong> REGION 5, REGION 8</li></ol></td><td><ol><li><strong>Cluster 1:</strong> BARMM, CAR, NCR, REGION 10, REGION 11, REGION 12, REGION 2, REGION 4-A</li><li><strong>Cluster 2:</strong> MIMAROPA, NIR, REGION 6, REGION 7</li><li><strong>Cluster 3:</strong> REGION 1, REGION 3, REGION 9</li><li><strong>Cluster 4:</strong> REGION 13</li><li><strong>Cluster 5:</strong> REGION 5, REGION 8</li></ol></td><td><ol><li><strong>Cluster 1:</strong> REGION 2</li><li><strong>Cluster 2:</strong> CAR, MIMAROPA, REGION 1</li><li><strong>Cluster 3:</strong> NIR, REGION 5, REGION 6, REGION 7, REGION 8</li><li><strong>Cluster 4:</strong> BARMM, REGION 11, REGION 13, REGION 3, REGION 9</li><li><strong>Cluster 5:</strong> NCR, REGION 10, REGION 12, REGION 4-A</li></ol></td><td><ol><li><strong>Cluster 1:</strong> all regions except REGION 13, REGION 8</li><li><strong>Noise:</strong> REGION 13, REGION 8</li></ol></td></tr>
+          <tr><td>APR</td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 10, REGION 12</li><li><strong>Cluster 2:</strong> CAR</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 5, REGION 6, REGION 7</li><li><strong>Cluster 4:</strong> NCR, REGION 1, REGION 3, REGION 4-A, REGION 9</li><li><strong>Cluster 5:</strong> REGION 11, REGION 13</li><li><strong>Cluster 6:</strong> REGION 2</li><li><strong>Cluster 7:</strong> REGION 8</li></ol></td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 10, REGION 11, REGION 12, REGION 13</li><li><strong>Cluster 2:</strong> CAR, REGION 2</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 6, REGION 7</li><li><strong>Cluster 4:</strong> NCR, REGION 1, REGION 3, REGION 4-A, REGION 9</li><li><strong>Cluster 5:</strong> REGION 5, REGION 8</li></ol></td><td><ol><li><strong>Cluster 1:</strong> NCR, REGION 1, REGION 4-A</li><li><strong>Cluster 2:</strong> REGION 13, REGION 5, REGION 8</li><li><strong>Cluster 3:</strong> BARMM, REGION 11, REGION 9</li><li><strong>Cluster 4:</strong> CAR, MIMAROPA, REGION 3</li><li><strong>Cluster 5:</strong> NIR, REGION 10, REGION 12, REGION 2, REGION 6, REGION 7</li></ol></td><td><ol><li><strong>Cluster 1:</strong> all 18 regions</li><li><strong>Noise:</strong> none</li></ol></td></tr>
+          <tr><td>MAY</td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 10, REGION 12</li><li><strong>Cluster 2:</strong> CAR</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 4-A, REGION 5, REGION 8</li><li><strong>Cluster 4:</strong> NCR, REGION 1, REGION 3, REGION 6</li><li><strong>Cluster 5:</strong> REGION 11, REGION 13, REGION 9</li><li><strong>Cluster 6:</strong> REGION 2</li><li><strong>Cluster 7:</strong> REGION 7</li></ol></td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 10, REGION 11, REGION 12, REGION 13</li><li><strong>Cluster 2:</strong> CAR, REGION 1, REGION 2, REGION 3</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 4-A, REGION 5, REGION 7, REGION 8</li><li><strong>Cluster 4:</strong> NCR, REGION 9</li><li><strong>Cluster 5:</strong> REGION 6</li></ol></td><td><ol><li><strong>Cluster 1:</strong> NCR, REGION 11, REGION 13, REGION 9</li><li><strong>Cluster 2:</strong> REGION 1, REGION 3, REGION 6</li><li><strong>Cluster 3:</strong> CAR, REGION 2, REGION 4-A</li><li><strong>Cluster 4:</strong> BARMM, REGION 10, REGION 12</li><li><strong>Cluster 5:</strong> MIMAROPA, NIR, REGION 5, REGION 7, REGION 8</li></ol></td><td><ol><li><strong>Cluster 1:</strong> all 18 regions</li><li><strong>Noise:</strong> none</li></ol></td></tr>
+          <tr><td>JUN</td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 10, REGION 12</li><li><strong>Cluster 2:</strong> CAR</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 4-A</li><li><strong>Cluster 4:</strong> NCR, REGION 11, REGION 13, REGION 9</li><li><strong>Cluster 5:</strong> REGION 1, REGION 3, REGION 6</li><li><strong>Cluster 6:</strong> REGION 2</li><li><strong>Cluster 7:</strong> REGION 5, REGION 7, REGION 8</li></ol></td><td><ol><li><strong>Cluster 1:</strong> BARMM, NCR, NIR, REGION 10, REGION 11, REGION 12, REGION 13, REGION 9</li><li><strong>Cluster 2:</strong> CAR</li><li><strong>Cluster 3:</strong> MIMAROPA, REGION 1, REGION 3, REGION 6</li><li><strong>Cluster 4:</strong> REGION 2</li><li><strong>Cluster 5:</strong> REGION 4-A, REGION 5, REGION 7, REGION 8</li></ol></td><td><ol><li><strong>Cluster 1:</strong> NCR, REGION 2, REGION 4-A, REGION 5, REGION 7, REGION 8</li><li><strong>Cluster 2:</strong> REGION 3</li><li><strong>Cluster 3:</strong> BARMM, REGION 10, REGION 11, REGION 12, REGION 13, REGION 9</li><li><strong>Cluster 4:</strong> MIMAROPA, NIR, REGION 6</li><li><strong>Cluster 5:</strong> CAR, REGION 1</li></ol></td><td><ol><li><strong>Cluster 1:</strong> all regions except CAR, REGION 2</li><li><strong>Noise:</strong> CAR, REGION 2</li></ol></td></tr>
+          <tr><td>JUL</td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 10, REGION 12</li><li><strong>Cluster 2:</strong> CAR</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 4-A, REGION 6, REGION 9</li><li><strong>Cluster 4:</strong> NCR, REGION 1, REGION 3</li><li><strong>Cluster 5:</strong> REGION 11, REGION 13</li><li><strong>Cluster 6:</strong> REGION 2</li><li><strong>Cluster 7:</strong> REGION 5, REGION 7, REGION 8</li></ol></td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 10, REGION 11, REGION 12, REGION 13</li><li><strong>Cluster 2:</strong> CAR, REGION 2</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 4-A, REGION 5, REGION 6, REGION 7, REGION 8, REGION 9</li><li><strong>Cluster 4:</strong> NCR</li><li><strong>Cluster 5:</strong> REGION 1, REGION 3</li></ol></td><td><ol><li><strong>Cluster 1:</strong> REGION 2, REGION 5, REGION 7</li><li><strong>Cluster 2:</strong> NCR, REGION 11, REGION 13, REGION 4-A</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 3, REGION 6</li><li><strong>Cluster 4:</strong> CAR, REGION 1, REGION 10, REGION 12</li><li><strong>Cluster 5:</strong> BARMM, REGION 8, REGION 9</li></ol></td><td><ol><li><strong>Cluster 1:</strong> all regions except CAR, REGION 2</li><li><strong>Noise:</strong> CAR, REGION 2</li></ol></td></tr>
+          <tr><td>AUG</td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 10, REGION 12</li><li><strong>Cluster 2:</strong> CAR</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 4-A, REGION 6</li><li><strong>Cluster 4:</strong> NCR, REGION 1, REGION 3</li><li><strong>Cluster 5:</strong> REGION 11, REGION 13, REGION 9</li><li><strong>Cluster 6:</strong> REGION 2</li><li><strong>Cluster 7:</strong> REGION 5, REGION 7, REGION 8</li></ol></td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 10, REGION 11, REGION 12, REGION 13, REGION 2, REGION 9</li><li><strong>Cluster 2:</strong> CAR</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 4-A, REGION 5, REGION 6, REGION 7, REGION 8</li><li><strong>Cluster 4:</strong> NCR</li><li><strong>Cluster 5:</strong> REGION 1, REGION 3</li></ol></td><td><ol><li><strong>Cluster 1:</strong> CAR, REGION 13, REGION 2</li><li><strong>Cluster 2:</strong> MIMAROPA, NCR, REGION 4-A, REGION 5, REGION 7</li><li><strong>Cluster 3:</strong> NIR, REGION 11, REGION 8, REGION 9</li><li><strong>Cluster 4:</strong> REGION 1, REGION 3, REGION 6</li><li><strong>Cluster 5:</strong> BARMM, REGION 10, REGION 12</li></ol></td><td><ol><li><strong>Cluster 1:</strong> all 18 regions</li><li><strong>Noise:</strong> none</li></ol></td></tr>
+          <tr><td>SEP</td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 10, REGION 12</li><li><strong>Cluster 2:</strong> CAR</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 5, REGION 6</li><li><strong>Cluster 4:</strong> NCR, REGION 1, REGION 3</li><li><strong>Cluster 5:</strong> REGION 11, REGION 13, REGION 9</li><li><strong>Cluster 6:</strong> REGION 2, REGION 4-A</li><li><strong>Cluster 7:</strong> REGION 7, REGION 8</li></ol></td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 10, REGION 12, REGION 2, REGION 9</li><li><strong>Cluster 2:</strong> CAR</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 4-A, REGION 5, REGION 6, REGION 7, REGION 8</li><li><strong>Cluster 4:</strong> NCR, REGION 1, REGION 3</li><li><strong>Cluster 5:</strong> REGION 11, REGION 13</li></ol></td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 10, REGION 11, REGION 12</li><li><strong>Cluster 2:</strong> REGION 5, REGION 6, REGION 7, REGION 8, REGION 9</li><li><strong>Cluster 3:</strong> NCR, REGION 1, REGION 13</li><li><strong>Cluster 4:</strong> MIMAROPA, NIR, REGION 4-A</li><li><strong>Cluster 5:</strong> CAR, REGION 2, REGION 3</li></ol></td><td><ol><li><strong>Cluster 1:</strong> all regions except REGION 1, REGION 3</li><li><strong>Noise:</strong> REGION 1, REGION 3</li></ol></td></tr>
+          <tr><td>OCT</td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 10, REGION 12</li><li><strong>Cluster 2:</strong> CAR</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 1, REGION 5, REGION 6, REGION 8</li><li><strong>Cluster 4:</strong> NCR, REGION 2, REGION 4-A</li><li><strong>Cluster 5:</strong> REGION 11, REGION 13, REGION 9</li><li><strong>Cluster 6:</strong> REGION 3</li><li><strong>Cluster 7:</strong> REGION 7</li></ol></td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 10, REGION 11, REGION 12, REGION 13</li><li><strong>Cluster 2:</strong> CAR, REGION 2</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 1, REGION 3, REGION 6, REGION 7, REGION 8, REGION 9</li><li><strong>Cluster 4:</strong> NCR, REGION 4-A</li><li><strong>Cluster 5:</strong> REGION 5</li></ol></td><td><ol><li><strong>Cluster 1:</strong> REGION 4-A, REGION 5, REGION 6</li><li><strong>Cluster 2:</strong> REGION 11, REGION 13, REGION 9</li><li><strong>Cluster 3:</strong> MIMAROPA, NCR, REGION 3, REGION 7, REGION 8</li><li><strong>Cluster 4:</strong> BARMM, CAR, REGION 10, REGION 12</li><li><strong>Cluster 5:</strong> NIR, REGION 1, REGION 2</li></ol></td><td><ol><li><strong>Cluster 1:</strong> all 18 regions</li><li><strong>Noise:</strong> none</li></ol></td></tr>
+          <tr><td>NOV</td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 10, REGION 12</li><li><strong>Cluster 2:</strong> CAR</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 6, REGION 7</li><li><strong>Cluster 4:</strong> NCR, REGION 2</li><li><strong>Cluster 5:</strong> REGION 1, REGION 3</li><li><strong>Cluster 6:</strong> REGION 11, REGION 13, REGION 9</li><li><strong>Cluster 7:</strong> REGION 4-A, REGION 5, REGION 8</li></ol></td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 1, REGION 10, REGION 11, REGION 12, REGION 3</li><li><strong>Cluster 2:</strong> CAR, REGION 2</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 6, REGION 7, REGION 9</li><li><strong>Cluster 4:</strong> NCR, REGION 13</li><li><strong>Cluster 5:</strong> REGION 4-A, REGION 5, REGION 8</li></ol></td><td><ol><li><strong>Cluster 1:</strong> MIMAROPA, NIR, REGION 1, REGION 3, REGION 6, REGION 7</li><li><strong>Cluster 2:</strong> NCR, REGION 13</li><li><strong>Cluster 3:</strong> CAR, REGION 10, REGION 2</li><li><strong>Cluster 4:</strong> REGION 4-A, REGION 5, REGION 8</li><li><strong>Cluster 5:</strong> BARMM, REGION 11, REGION 12, REGION 9</li></ol></td><td><ol><li><strong>Cluster 1:</strong> all 18 regions</li><li><strong>Noise:</strong> none</li></ol></td></tr>
+          <tr><td>DEC</td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 12, REGION 9</li><li><strong>Cluster 2:</strong> CAR</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 6, REGION 7</li><li><strong>Cluster 4:</strong> NCR, REGION 2</li><li><strong>Cluster 5:</strong> REGION 1, REGION 3</li><li><strong>Cluster 6:</strong> REGION 10, REGION 11, REGION 13</li><li><strong>Cluster 7:</strong> REGION 4-A, REGION 5, REGION 8</li></ol></td><td><ol><li><strong>Cluster 1:</strong> BARMM, REGION 1, REGION 10, REGION 11, REGION 12, REGION 3, REGION 9</li><li><strong>Cluster 2:</strong> CAR, REGION 2</li><li><strong>Cluster 3:</strong> MIMAROPA, NIR, REGION 6, REGION 7</li><li><strong>Cluster 4:</strong> NCR, REGION 13, REGION 4-A</li><li><strong>Cluster 5:</strong> REGION 5, REGION 8</li></ol></td><td><ol><li><strong>Cluster 1:</strong> MIMAROPA, NIR, REGION 1, REGION 3, REGION 6, REGION 7</li><li><strong>Cluster 2:</strong> BARMM, CAR, REGION 10, REGION 12</li><li><strong>Cluster 3:</strong> NCR, REGION 13</li><li><strong>Cluster 4:</strong> REGION 4-A, REGION 5, REGION 8</li><li><strong>Cluster 5:</strong> REGION 11, REGION 2, REGION 9</li></ol></td><td><ol><li><strong>Cluster 1:</strong> all 18 regions</li><li><strong>Noise:</strong> none</li></ol></td></tr>
+          </tbody>
+          </table>
+
+          <p>
+          K-means repeatedly isolated CAR and REGION 2, while BARMM, REGION 10, and REGION 12 frequently formed a recurring group. Hierarchical clustering produced more stable five-cluster structures, especially the repeated pair CAR–REGION 2 and the recurring MIMAROPA–NIR–REGION 6–REGION 7 grouping. GMM produced more fragmented assignments because its selected component count was large relative to the 18 observations. DBSCAN generally treated the dataset as one connected density component and therefore did not provide multi-cluster regionalization.
+          </p>
+
+          <h3 class="title is-4">3. Algorithm Comparison</h3>
+
+          <p>
+          Table 5 compares the final assignments using the same standardized monthly feature tables. Higher Silhouette Scores and lower DBI values are preferable.
+          </p>
+
+          <table class="table is-bordered is-striped">
+          <thead><tr><th>Month</th><th>K-means Silhouette</th><th>K-means DBI</th><th>Hierarchical Silhouette</th><th>Hierarchical DBI</th><th>GMM Silhouette</th><th>GMM DBI</th></tr></thead>
+          <tbody>
+          <tr><td>JAN</td><td>0.237211</td><td>0.740501</td><td>0.307323</td><td>0.745944</td><td>-0.003029</td><td>0.497826</td></tr>
+          <tr><td>FEB</td><td>0.219475</td><td>0.776734</td><td>0.316623</td><td>0.719418</td><td>-0.133555</td><td>0.910970</td></tr>
+          <tr><td>MAR</td><td>0.295950</td><td>0.732794</td><td>0.371513</td><td>0.623518</td><td>0.007160</td><td>0.631936</td></tr>
+          <tr><td>APR</td><td>0.231611</td><td>0.656118</td><td>0.387185</td><td>0.736886</td><td>0.025690</td><td>0.985183</td></tr>
+          <tr><td>MAY</td><td>0.106758</td><td>0.826103</td><td>0.344247</td><td>0.685470</td><td>0.046856</td><td>0.619739</td></tr>
+          <tr><td>JUN</td><td>0.293780</td><td>0.698497</td><td>0.297471</td><td>0.685800</td><td>0.117770</td><td>0.647477</td></tr>
+          <tr><td>JUL</td><td>0.318262</td><td>0.696782</td><td>0.316551</td><td>0.669228</td><td>0.162494</td><td>0.443609</td></tr>
+          <tr><td>AUG</td><td>0.307012</td><td>0.693221</td><td>0.288588</td><td>0.604613</td><td>-0.008992</td><td>0.599383</td></tr>
+          <tr><td>SEP</td><td>0.231320</td><td>0.895636</td><td>0.253734</td><td>0.813856</td><td>0.038496</td><td>0.661523</td></tr>
+          <tr><td>OCT</td><td>0.124721</td><td>0.741094</td><td>0.292793</td><td>0.727532</td><td>0.086404</td><td>0.653948</td></tr>
+          <tr><td>NOV</td><td>0.348348</td><td>0.739221</td><td>0.379304</td><td>0.768972</td><td>0.033055</td><td>0.581589</td></tr>
+          <tr><td>DEC</td><td>0.334000</td><td>0.780501</td><td>0.409811</td><td>0.725267</td><td>0.126367</td><td>0.457934</td></tr>
+          </tbody>
+          </table>
+
+          <p>
+          Across all months, hierarchical clustering obtained the highest mean Silhouette Score, 0.330428, followed by K-means at 0.254037 and GMM at 0.041560. GMM obtained the lowest mean DBI, 0.640926, followed by hierarchical clustering at 0.708875 and K-means at 0.748100. Thus, the metrics do not identify one universally superior algorithm.
+          </p>
+
+          <p>
+          The metrics disagree in several months. Hierarchical clustering had higher Silhouette Scores than K-means in January and April, but K-means had slightly lower DBI values in those months. The same pattern occurred in November. Conversely, GMM frequently produced the lowest DBI, but its Silhouette Scores were low or negative, indicating that its compactness/separation result was not accompanied by strong region-level assignment separation.
+          </p>
+
+          <p>
+          DBSCAN is not included in the comparable metric table because its Silhouette Score and DBI were undefined in every month: each result contained only one non-noise cluster. Its epsilon values, noise proportions, and undefined-score status are reported in the DBSCAN table in Section 1. The noise proportions ranged from 0.000000 to 0.166667 and should be interpreted as coverage information rather than as evidence of superior clustering quality.
+          </p>
+
+          <p>Figures 5–7 show January through March examples of the k-distance graphs used with the maximum-deviation knee-selection heuristic.</p>
+          <figure>
+          <img src="./static/images/results/dbscan/JAN_k_distance.png" alt="January DBSCAN k-distance graph">
+          <figcaption>Figure 5. January DBSCAN k-distance graph used with the maximum-deviation knee-selection heuristic.</figcaption>
+          </figure>
+          <figure>
+          <img src="./static/images/results/dbscan/FEB_k_distance.png" alt="February DBSCAN k-distance graph">
+          <figcaption>Figure 6. February DBSCAN k-distance graph used with the maximum-deviation knee-selection heuristic.</figcaption>
+          </figure>
+          <figure>
+          <img src="./static/images/results/dbscan/MAR_k_distance.png" alt="March DBSCAN k-distance graph">
+          <figcaption>Figure 7. March DBSCAN k-distance graph used with the maximum-deviation knee-selection heuristic.</figcaption>
+          </figure>
+
+          <h3 class="title is-4">4. Selected-Configuration Figures</h3>
+
+          <p>
+          The following figures show January outputs for the final configurations selected using the twelve-month mean combined ranks. They are presented separately from the January candidate-metric tables because the displayed assignments correspond to the final mean-based configurations.
+          </p>
+          <p>Figure 1 shows the January K-means output for the selected \(k=7\) configuration.</p>
+          <figure>
+          <img src="./static/images/results/kmeans/JAN_clusters.png" alt="January K-means cluster scatter views">
+          <figcaption>Figure 1. Representative January K-means output for the selected \(k=7\) configuration.</figcaption>
+          </figure>
+          <p>Figure 2 shows the January hierarchical clustering output for the selected \(k=5\) configuration.</p>
+          <figure>
+          <img src="./static/images/results/hierarchical/JAN_clusters.png" alt="January hierarchical clustering scatter views">
+          <figcaption>Figure 2. Representative January hierarchical clustering output for the selected \(k=5\) configuration.</figcaption>
+          </figure>
+          <p>Figure 3 shows the January Gaussian Mixture Model output for the selected 14-component configuration.</p>
+          <figure>
+          <img src="./static/images/results/gmm/JAN_clusters.png" alt="January Gaussian mixture model cluster plot">
+          <figcaption>Figure 3. Representative January Gaussian Mixture Model output for the selected 14-component configuration.</figcaption>
+          </figure>
+          <p>Figure 4 shows the January DBSCAN output using the selected epsilon and MinPts configuration.</p>
+          <figure>
+          <img src="./static/images/results/dbscan/JAN_clusters_4d.png" alt="January DBSCAN four-dimensional cluster plot">
+          <figcaption>Figure 4. Representative January DBSCAN output using the selected epsilon and MinPts configuration.</figcaption>
+          </figure>
+          <h3 class="title is-4">5. Climatological Interpretation</h3>
+
+          <p>
+          The recurring groupings should be interpreted as climate-profile similarities rather than as strict geographic boundaries. PAGASA describes the Philippine climate as tropical and maritime, with rainfall controlled by moisture-bearing winds, mountain systems, monsoon seasons, and tropical cyclones [28]. These controls provide a climatological basis for the observed month-to-month changes.
+          </p>
+
+          <p>
+          The repeated association of MIMAROPA, NIR, REGION 6, and REGION 7 in several methods is consistent with the possibility of shared maritime and seasonal rainfall influences across portions of the Visayas and adjacent island groups. The repeated grouping of BARMM, REGION 10, and REGION 12 may reflect similarities in southern Philippine temperature, rainfall, wind, and solar profiles. These statements are interpretations; the clustering metrics themselves establish only similarity in the four standardized variables.
+          </p>
+
+          <p>
+          CAR was frequently isolated by K-means and separated by hierarchical clustering. This is climatologically plausible because elevation can produce a strong temperature contrast: PAGASA reports substantially cooler conditions for Baguio than for low-elevation Philippine stations [28]. The result should nevertheless be treated cautiously because CAR is represented by an area-weighted grid-cell average rather than by a station-level elevation profile.
+          </p>
+
+          <p>
+          The changing membership of western, central, and eastern regions across months is also consistent with the seasonal reversal of monsoon influence and the country's established rainfall regimes. A recent Philippine climate-regionalization study similarly found that combining rainfall and temperature can produce climate zones that differ from traditional rainfall-only classifications [29]. The present results extend that interpretation by incorporating wind speed and solar irradiance, although the use of administrative-region averages prevents direct comparison with gridded climate zones.
+          </p>
+
+          <h3 class="title is-4">6. Limitations</h3>
+
+          <ul>
+          <li>The analysis contains only 18 observations per month, limiting the stability and statistical resolution of the clusters.</li>
+          <li>K-means and GMM use random initialization, and only one run was performed for each month. The resulting assignments may therefore depend on initialization.</li>
+          <li>Silhouette Score and DBI favor particular geometric assumptions, especially compact and separated clusters, and may not fully represent climatologically meaningful but overlapping regimes.</li>
+          <li>Unequal cluster sizes can affect both metrics and can make fragmented solutions appear favorable under one metric.</li>
+          <li>DBSCAN is sensitive to epsilon. Although epsilon was estimated monthly using the maximum-deviation knee-selection heuristic, the resulting values produced one non-noise cluster in every month.</li>
+          <li>DBSCAN metrics exclude noise points, so a low score would not be directly comparable with a score calculated over all 18 regions.</li>
+          <li>NASA POWER grid-cell values and area-weighted regional averages are general climate representations and may not capture local topography, coastlines, or station-level variability.</li>
+          </ul>
+
+          <h3 class="title is-4">Figures and Reproducibility Notes</h3>
+
+          <p>
+          The supplied repository contains DBSCAN k-distance, knee-deviation, maximum-deviation, three-dimensional, and scatter plots under <code>method_results/dbscan/monthly/</code>. It also contains GMM cluster plots under <code>method_results/gaussian/monthly/</code>. The selected K-means and hierarchical folders contain cluster assignments but no generated cluster plots or dendrogram images.
+          </p>
+
+          <p>
+          Additional figures that remain to be generated are the monthly Silhouette and DBI line charts, selected-run hierarchical dendrograms, and the specified precipitation-versus-temperature and wind-versus-solar scatter views for every month.
+          </p>
+
+          <pre><code>import csv
+          from pathlib import Path
+          import matplotlib.pyplot as plt
+
+          root = Path(".")
+          months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]
+          runs = {
+              "K-means": ("kmeans", "k_7"),
+              "Hierarchical": ("hierarchical", "k_5"),
+              "GMM": ("gaussian", "k_14"),
+          }
+
+          for metric, filename, ylabel in [
+              ("silhouette", "silhouette_scores.csv", "Silhouette Score"),
+              ("davies_bouldin", "davies_bouldin_scores.csv", "Davies-Bouldin Index"),
+          ]:
+              plt.figure(figsize=(10, 5))
+              for label, (method, run) in runs.items():
+                  path = root / "metric_results" / method / "monthly" / run / filename
+                  with path.open(newline="", encoding="utf-8") as f:
+                      rows = list(csv.DictReader(f))
+                  values = [float(row[metric]) for row in rows]
+                  plt.plot(months, values, marker="o", label=label)
+              plt.xlabel("Month")
+              plt.ylabel(ylabel)
+              plt.grid(alpha=0.3)
+              plt.legend()
+              plt.tight_layout()
+              plt.savefig(f"{metric}_selected_runs.png", dpi=300)
+              plt.close()
+          </code></pre>
+
+          <h3 class="title is-4">References for New Sources</h3>
+
+          <ol start="28">
+          <li>Philippine Atmospheric, Geophysical and Astronomical Services Administration, “Climate of the Philippines,” Department of Science and Technology. [Online]. Available: <a href="https://www.pagasa.dost.gov.ph/index.php/information/climate-philippines">https://www.pagasa.dost.gov.ph/index.php/information/climate-philippines</a></li>
+          <li>L. M. P. Olaguera, E. K. Badua, A. G. A. Llorin, F. A. T. Cruz, J. R. T. Villarin, J. A. Manalo, M. Q. Villafuerte, and J. Matsumoto, “Rainfall and temperature-based Philippine climate zones using self-organizing maps,” <i>Scientific Online Letters on the Atmosphere</i>, vol. 21C, pp. 10–20, 2025, doi: <a href="https://doi.org/10.2151/sola.21C-002">10.2151/sola.21C-002</a>.</li>
+          </ol>
+
+          </div>
       </div>
     </div>
     <!--/ Results and Discussion. -->
