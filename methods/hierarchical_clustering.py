@@ -13,7 +13,6 @@ Note:
 
 import csv
 import math
-import sys
 from pathlib import Path
 
 from utilities.data_reader import MONTHS, read_data
